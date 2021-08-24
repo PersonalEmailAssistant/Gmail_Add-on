@@ -12,7 +12,7 @@ function onGmailMessage(e){
   console.log(e.messageMetadata.messageId)
     // add button that sends an email
   var action = CardService.newAction()
-      .setFunctionName('sendEmails')
+      .setFunctionName('snoozeTimer')
       .setParameters({id: e.messageMetadata.messageId});
   var button = CardService.newTextButton()
       .setText('Send Email')
