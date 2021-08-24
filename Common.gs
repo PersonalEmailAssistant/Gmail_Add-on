@@ -15,7 +15,7 @@ function onGmailMessage(e){
       .setFunctionName('snoozeTimer')
       .setParameters({id: e.messageMetadata.messageId});
   var button = CardService.newTextButton()
-      .setText('Send Email')
+      .setText('Snooze Email')
       .setOnClickAction(action)
       .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
   var buttonSet = CardService.newButtonSet()

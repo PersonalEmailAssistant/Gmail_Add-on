@@ -1,32 +1,44 @@
 /**
- * currently: retrieves email subject and body, sends email from current account with this info
+ * currently:
+ *  moves the email out of inbox
+ *  sets a timer to trigger, for now the time is pre-defined
+ *  during snooze period, the email can be viewed in the "snooze" labelled folder
+ *        (this is different to the folder it goes to when you use the actual gmail snooze button.
+ *            ideally, it would go there but i don't know if that is possible)
+ *  after timer finishes, the email is returned to the inbox and snooze label is removed
+ * 
  * to do:
- *  - allow the user to select how long until the email comes back
- *  - include the original sender's email address (perhaps the email should be forwarded rather than a new one sent)
- *  - once email has been scheduled to send, the original email should be deleted
+ *  it would be good if there was a way to see how long the email is snoozed for - i thought about doing this 
+ *      by adding another label but then it creates an another new folder and that would get messy
+ *  one huge problem - the email doesn't go to the top of the inbox because the sent date has not changed
+ *  find out if there is a way for app script call the snooze function - this would solve all problems
+ *      (feels a bit like we are reinventing the wheel, the button is literally already there :<)
  */
+
 function snoozeTimer(email){
   // set a time based trigger 
-  var trigger = ScriptApp.newTrigger('sendEmails')
+  var trigger = ScriptApp.newTrigger('unsnoozeEmail')
   .timeBased()
   .after(30000) // time in milliseconds
   .create();
 
+  label = GmailApp.createLabel("Snooze");
+  var thread = GmailApp.getThreadById(email.gmail.threadId);
+  thread.addLabel(label);
+  thread.moveToArchive(); // move out of inbox
+
   var id = trigger.getUniqueId();
   var scriptProperties = PropertiesService.getScriptProperties();
-  scriptProperties.setProperty(id, email.gmail.messageId);
+  scriptProperties.setProperty(id, email.gmail.threadId);
 }
 
-
-function sendEmails(e) {
+function unsnoozeEmail(e){
   var triggerId = e.triggerUid;
   var scriptProperties = PropertiesService.getScriptProperties();
-  var email = scriptProperties.getProperty(triggerId);
+  var threadId = scriptProperties.getProperty(triggerId);
+  var thread = GmailApp.getThreadById(threadId);
 
-  var message = GmailApp.getMessageById(email);
-  var emailAddress = Session.getActiveUser().getEmail();
-  var subject = message.getSubject();
-  var body = message.getBody();
-
-  MailApp.sendEmail(emailAddress, subject, body);
+  label = thread.getLabels();
+  thread.removeLabel(label[0]);
+  thread.moveToInbox();
 }
