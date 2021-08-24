@@ -1,7 +1,19 @@
 function onHomepage(e) {
-  // add button that sends an email
+
+}
+
+// useful link for getting info from gmail:
+  // https://developers.google.com/apps-script/reference/gmail/gmail-app
+  // https://developers.google.com/apps-script/reference/gmail/gmail-message
+
+
+// only visable after the user has selected an email
+function onGmailMessage(e){
+  console.log(e.messageMetadata.messageId)
+    // add button that sends an email
   var action = CardService.newAction()
       .setFunctionName('sendEmails')
+      .setParameters({id: e.messageMetadata.messageId});
   var button = CardService.newTextButton()
       .setText('Send Email')
       .setOnClickAction(action)

@@ -1,14 +1,14 @@
 /**
- * attempt to send a predefined email when a button is pushed 
+ * currently: retrieves email subject and body, sends email from current account with this info
+ * todo:
+ *  - allow the user to select how long until the email comes back
+ *  - include the original sender's email (perhaps the email should be forwarded rather than a new one sent)
  */
-function sendEmails() {
-  // for now i have set these, later they will be found from the current email
-  emailAddress = "22721679@student.uwa.edu.au"; // my email address
-  subject = "test email";
-  message = "this is a test email sent";
-  MailApp.sendEmail(emailAddress, subject, message);
+function sendEmails(email) {
+  message = GmailApp.getMessageById(email.gmail.messageId);
+  emailAddress = Session.getActiveUser().getEmail();
+  subject = message.getSubject();
+  body = message.getBody();
 
+  MailApp.sendEmail(emailAddress, subject, body);
 }
-// [END apps_script_gmail_send_emails]
-
-var EMAIL_SENT = 'EMAIL_SENT';
