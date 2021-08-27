@@ -21,9 +21,18 @@ function onGmailMessage(e){
   var buttonSet = CardService.newButtonSet()
       .addButton(button);
 
+  // Add date picker
+  var dateTimePicker = CardService.newDatePicker()
+      .setTitle("Enter the date to snooze until.")
+      .setFieldName("date_field")
+      // Set default value as today's date
+      .setOnChangeAction(CardService.newAction()
+          .setFunctionName("dateTimeChange"))
+
   // Assemble the widgets and return the card.
   var section = CardService.newCardSection()
       .addWidget(buttonSet);
+      .addWidget(dateTimePicker);
   var card = CardService.newCardBuilder()
       .addSection(section)
 
