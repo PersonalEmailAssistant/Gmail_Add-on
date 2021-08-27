@@ -1,3 +1,7 @@
+var now = new Date();
+var snoozeUntil = new Date(now.getTime()+(2 * 60 * 60 * 1000)); // set default snooze time as now + 2 hours
+
+
 function onHomepage(e) {
 
 }
@@ -25,14 +29,23 @@ function onGmailMessage(e){
   var dateTimePicker = CardService.newDatePicker()
       .setTitle("Enter the date to snooze until.")
       .setFieldName("date_field")
-      // Set default value as today's date
+      .setValueInMsSinceEpoch(snoozeUntil.getTime())
       .setOnChangeAction(CardService.newAction()
-          .setFunctionName("dateTimeChange"))
+          .setFunctionName("snoozeTimeChange"))
+  // add time picker // for hours and minutes
+  var timeTimePicker = CardService.newTimePicker()
+      .setFieldName("time_field")
+      .setHours(snoozeUntil.getHours())
+      .setMinutes(0)
+      .setOnChangeAction(CardService.newAction()
+        .setFunctionName("snoozeTimeChange"))
 
   // Assemble the widgets and return the card.
   var section = CardService.newCardSection()
+      .setHeader("Section header")
       .addWidget(buttonSet)
-      .addWidget(dateTimePicker);
+      .addWidget(dateTimePicker)
+      .addWidget(timeTimePicker);
   var card = CardService.newCardBuilder()
       .addSection(section)
 
