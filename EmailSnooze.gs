@@ -1,11 +1,12 @@
 /**
  * currently:
- *  sets a timer (fixed amount of time for now)
+ *  sets a timer 
  *  removes email from inbox
  *  once timer is up, forwards the email
  * 
  * to do:
- *  - user should be able to select how long they want the email to snooze for
+ *  - as well as the specific date/time picker, i think it would be valuble to have set buttons for 
+ *      tomorrow, 1 week, ect. like gmail snooze and followupthen have
  *  - it would be good if the user could view the emails that are currently snoozing 
  *        (i think this could be done by adding labels) 
  */
@@ -14,7 +15,7 @@ function snoozeTimer(email){
   // set a time based trigger 
   var trigger = ScriptApp.newTrigger('forwardEmail')
   .timeBased()
-  .after(30000) // time in milliseconds
+  .after(snoozeUntil.getTime()-now.getTime()) // time in milliseconds
   .create();
 
   // stores email information so that it can be used by forwardEmail later
@@ -39,4 +40,14 @@ function forwardEmail(e) {
   
   // forwards the message to current user
   message.forward(emailAddress);
+}
+
+// called when the user changes the time or date picker
+// gets values from time and date picker to update snoozeUntil 
+function snoozeTimeChange(e){
+  var selectedSnoozeTime = e.formInput.date_field.msSinceEpoch;
+  selectedSnoozeTime += (e.formInput.time_field.hours-8) * 3600000 
+  selectedSnoozeTime += e.formInput.time_field.minutes * 60000;
+  snoozeUntil = new Date(selectedSnoozeTime);
+  console.log(snoozeUntil)
 }
