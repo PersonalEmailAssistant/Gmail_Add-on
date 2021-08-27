@@ -31,7 +31,7 @@ function onGmailMessage(e){
 
   // Assemble the widgets and return the card.
   var section = CardService.newCardSection()
-      .addWidget(buttonSet);
+      .addWidget(buttonSet)
       .addWidget(dateTimePicker);
   var card = CardService.newCardBuilder()
       .addSection(section)
