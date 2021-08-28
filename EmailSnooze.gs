@@ -51,3 +51,14 @@ function snoozeTimeChange(e){
   snoozeUntil = new Date(selectedSnoozeTime);
   console.log(snoozeUntil)
 }
+
+function buttonSnoozeTimeChange(e, hours){
+  snoozeUntil = new Date(now.getTime()+hours*3600000);
+  console.log(snoozeUntil);
+  snoozeTimer(e);
+}
+
+function twoHoursSnooze(e){ buttonSnoozeTimeChange(e, 2);}
+function tomorrowSnooze(e){ buttonSnoozeTimeChange(e, 24);}
+function nextWeekSnooze(e){ buttonSnoozeTimeChange(e, 24*7);}
+function twoWeeksSnooze(e){ buttonSnoozeTimeChange(e, 24*14);}

@@ -13,8 +13,8 @@ function onHomepage(e) {
 
 // only visable after the user has selected an email
 function onGmailMessage(e){
-  console.log(e.messageMetadata.messageId)
-    // add button that sends an email
+  console.log(e)
+    // add snooze email button
   var action = CardService.newAction()
       .setFunctionName('snoozeTimer')
       .setParameters({id: e.messageMetadata.messageId});
@@ -24,6 +24,32 @@ function onGmailMessage(e){
       .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
   var buttonSet = CardService.newButtonSet()
       .addButton(button);
+
+  var twohoursaction = CardService.newAction().setFunctionName('twoHoursSnooze')
+  var tomorrowaction = CardService.newAction().setFunctionName('tomorrowSnooze')
+  var nextweekaction = CardService.newAction().setFunctionName('nextWeekSnooze')
+  var twoweeksaction = CardService.newAction().setFunctionName('twoWeeksSnooze')
+  var twohoursbutton = CardService.newTextButton()
+      .setText('Two Hours')
+      .setOnClickAction(twohoursaction)
+      .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
+  var tomorrowbutton = CardService.newTextButton()
+      .setText('Tomorrow')
+      .setOnClickAction(tomorrowaction)
+      .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
+  var nextweekbutton = CardService.newTextButton()
+      .setText('Next Week')
+      .setOnClickAction(nextweekaction)
+      .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
+  var twoweeksbutton = CardService.newTextButton()
+      .setText('Two Weeks')
+      .setOnClickAction(twoweeksaction)
+      .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
+  var snoozebuttonSet = CardService.newButtonSet()
+      .addButton(twohoursbutton)
+      .addButton(tomorrowbutton)
+      .addButton(nextweekbutton)
+      .addButton(twoweeksbutton);
 
   // Add date picker
   var dateTimePicker = CardService.newDatePicker()
@@ -42,10 +68,11 @@ function onGmailMessage(e){
 
   // Assemble the widgets and return the card.
   var section = CardService.newCardSection()
-      .setHeader("Section header")
-      .addWidget(buttonSet)
+      .setHeader("Snooze Email")
+      .addWidget(snoozebuttonSet)
       .addWidget(dateTimePicker)
-      .addWidget(timeTimePicker);
+      .addWidget(timeTimePicker)
+      .addWidget(buttonSet);
   var card = CardService.newCardBuilder()
       .addSection(section)
 
