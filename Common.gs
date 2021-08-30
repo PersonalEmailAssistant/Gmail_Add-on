@@ -139,7 +139,7 @@ function snoozeDatePicker() {
   var snoozeDatePicker = CardService.newDatePicker()
     .setTitle("Enter the date to snooze until.")
     .setFieldName("date_field")
-    .setValueInMsSinceEpoch(snoozeUntil.getTime())
+    .setValueInMsSinceEpoch(snoozeUntil.getTime()+(8*3600000)) // its ugly but it works
     .setOnChangeAction(CardService.newAction()
       .setFunctionName("updateCard"));
 
@@ -155,7 +155,7 @@ function snoozeTimePicker() {
   var snoozeTimePicker = CardService.newTimePicker()
     .setFieldName("time_field")
     .setHours(snoozeUntil.getHours())
-    .setMinutes(0)
+    .setMinutes(snoozeUntil.getMinutes())
     .setOnChangeAction(CardService.newAction()
       .setFunctionName("updateCard"));
 
