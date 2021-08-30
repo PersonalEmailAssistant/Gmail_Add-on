@@ -20,13 +20,21 @@ function onHomepage(e) { }
  */
 function onGmailMessage(e){
 
+  var action = CardService.newAction()
+    .setFunctionName('snoozeTimer')
+    .setParameters({id: e.messageMetadata.messageId});
+  var snoozeButton = CardService.newTextButton()
+    .setText('Snooze Email')
+    .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+    .setOnClickAction(action);
+
   // Card Section for Snooze components, each add widget calls a function that creates the widget
   var snoozeSection = CardService.newCardSection()
     .setHeader("Snooze Email")
     .addWidget(snoozeQuickButtons())
     .addWidget(snoozeDatePicker())
     .addWidget(snoozeTimePicker())
-    .addWidget(CardService.newTextParagraph().setText("Enter a Date to Snooze Until."));
+    .addWidget(CardService.newButtonSet().addButton(snoozeButton));
 
   // Card which includes the Snooze components only
   var card = CardService.newCardBuilder()
