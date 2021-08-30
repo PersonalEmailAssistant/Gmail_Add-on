@@ -1,34 +1,105 @@
+// useful link for getting info from gmail:
+// https://developers.google.com/apps-script/reference/gmail/gmail-app
+// https://developers.google.com/apps-script/reference/gmail/gmail-message
+
+
 var now = new Date();
 var snoozeUntil = new Date(now.getTime()+(2 * 60 * 60 * 1000)); // set default snooze time as now + 2 hours
 
+/**
+ * Callback for what is seen when viewing the Homepage. Left as empty as there should be no action for viewing
+ * the Homepage. We should only view the add-on when an e-mail is selected.
+ */
+function onHomepage(e) { }
 
-function onHomepage(e) {
 
+/**
+ * Callback for rendering the card for a specific Gmail message. Only visable after the user has selected an email
+ * @param {Object} e The event object.
+ * @return {CardService.Card} The card to show to the user.
+ */
+function onGmailMessage(e){
+
+  // Card Section for Snooze components, each add widget calls a function that creates the widget
+  var snoozeSection = CardService.newCardSection()
+    .setHeader("Snooze Email")
+    .addWidget(snoozeQuickButtons())
+    .addWidget(snoozeDatePicker())
+    .addWidget(snoozeTimePicker())
+    .addWidget(CardService.newTextParagraph().setText("Enter a Date to Snooze Until."));
+
+  // Card which includes the Snooze components only
+  var card = CardService.newCardBuilder()
+    .addSection(snoozeSection);
+
+  return card.build();
 }
 
-// useful link for getting info from gmail:
-  // https://developers.google.com/apps-script/reference/gmail/gmail-app
-  // https://developers.google.com/apps-script/reference/gmail/gmail-message
+/**
+ * Callback for rendering the card for a specific Gmail message. Only visable after the user has selected an email
+ * @param {Object} e The event object.
+ * @return {CardService.Card} The card to show to the user.
+ */
+function updateCard(e) {
 
+  var selectedSnoozeTime = e.formInput.date_field.msSinceEpoch;
+  selectedSnoozeTime += (e.formInput.time_field.hours-8) * 3600000;
+  selectedSnoozeTime += e.formInput.time_field.minutes * 60000;
+  snoozeUntil = new Date(selectedSnoozeTime);
 
-// only visable after the user has selected an email
-function onGmailMessage(e){
-  console.log(e)
-    // add snooze email button
+  // Button Actions
   var action = CardService.newAction()
       .setFunctionName('snoozeTimer')
       .setParameters({id: e.messageMetadata.messageId});
-  var button = CardService.newTextButton()
-      .setText('Snooze Email')
-      .setOnClickAction(action)
-      .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
-  var buttonSet = CardService.newButtonSet()
-      .addButton(button);
+  var noAction = CardService.newAction()
+      .setFunctionName('noAction');
 
-  var twohoursaction = CardService.newAction().setFunctionName('twoHoursSnooze')
-  var tomorrowaction = CardService.newAction().setFunctionName('tomorrowSnooze')
-  var nextweekaction = CardService.newAction().setFunctionName('nextWeekSnooze')
-  var twoweeksaction = CardService.newAction().setFunctionName('twoWeeksSnooze')
+  // Button Renders
+  var snoozeButton = CardService.newTextButton()
+    .setText('Snooze Email')
+    .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+    .setOnClickAction(action);
+  var invalidButton = CardService.newTextButton()
+    .setText('Enter Valid Time')
+    .setTextButtonStyle(CardService.TextButtonStyle.TEXT)
+    .setOnClickAction(noAction);
+
+  var btnSet = CardService.newButtonSet();
+  var section = CardService.newCardSection()
+    .setHeader("Snooze Email")
+    .addWidget(snoozeQuickButtons())
+    .addWidget(snoozeDatePicker())
+    .addWidget(snoozeTimePicker());
+
+  if (now.getTime() > snoozeUntil.getTime()) {
+    section.addWidget(btnSet.addButton(invalidButton));
+  } else {
+    section.addWidget(btnSet.addButton(snoozeButton));
+  }
+
+  var card = CardService.newCardBuilder()
+    .addSection(section);
+
+  return CardService.newNavigation().updateCard(card.build());
+
+}
+
+
+//------------------------------- SNOOZE WIDGETS -------------------------------------
+
+/**
+ * Callback for creating the Snooze Quick Button widgets. Each button is a quick
+ * shortcut to common snooze times
+ * @return {CardService.Card} The button set containing each Snooze Quick Button
+ */
+function snoozeQuickButtons() {
+
+  // Create actions for each button
+  var twohoursaction = CardService.newAction().setFunctionName('twoHoursSnooze');
+  var tomorrowaction = CardService.newAction().setFunctionName('tomorrowSnooze');
+  var nextweekaction = CardService.newAction().setFunctionName('nextWeekSnooze');
+
+  // Create the buttons
   var twohoursbutton = CardService.newTextButton()
       .setText('Two Hours')
       .setOnClickAction(twohoursaction)
@@ -41,40 +112,44 @@ function onGmailMessage(e){
       .setText('Next Week')
       .setOnClickAction(nextweekaction)
       .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
-  var twoweeksbutton = CardService.newTextButton()
-      .setText('Two Weeks')
-      .setOnClickAction(twoweeksaction)
-      .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
-  var snoozebuttonSet = CardService.newButtonSet()
+
+  // Create the button set
+  var snoozeButtonSet = CardService.newButtonSet()
       .addButton(twohoursbutton)
       .addButton(tomorrowbutton)
-      .addButton(nextweekbutton)
-      .addButton(twoweeksbutton);
+      .addButton(nextweekbutton);
 
-  // Add date picker
-  var dateTimePicker = CardService.newDatePicker()
-      .setTitle("Enter the date to snooze until.")
-      .setFieldName("date_field")
-      .setValueInMsSinceEpoch(snoozeUntil.getTime())
-      .setOnChangeAction(CardService.newAction()
-          .setFunctionName("snoozeTimeChange"))
-  // add time picker // for hours and minutes
-  var timeTimePicker = CardService.newTimePicker()
-      .setFieldName("time_field")
-      .setHours(snoozeUntil.getHours())
-      .setMinutes(0)
-      .setOnChangeAction(CardService.newAction()
-        .setFunctionName("snoozeTimeChange"))
+  return snoozeButtonSet;
+}
 
-  // Assemble the widgets and return the card.
-  var section = CardService.newCardSection()
-      .setHeader("Snooze Email")
-      .addWidget(snoozebuttonSet)
-      .addWidget(dateTimePicker)
-      .addWidget(timeTimePicker)
-      .addWidget(buttonSet);
-  var card = CardService.newCardBuilder()
-      .addSection(section)
+/**
+ * Callback for creating the Snooze Date Picker widget.
+ * @return {CardService.Card} The Date Picker widget
+ */
+function snoozeDatePicker() {
 
-  return card.build();
+  var snoozeDatePicker = CardService.newDatePicker()
+    .setTitle("Enter the date to snooze until.")
+    .setFieldName("date_field")
+    .setValueInMsSinceEpoch(snoozeUntil.getTime())
+    .setOnChangeAction(CardService.newAction()
+      .setFunctionName("updateCard"));
+
+  return snoozeDatePicker;
+}
+
+/**
+ * Callback for creating the Snooze Time Picker widget.
+ * @return {CardService.Card} The Time Picker widget
+ */
+function snoozeTimePicker() {
+
+  var snoozeTimePicker = CardService.newTimePicker()
+    .setFieldName("time_field")
+    .setHours(snoozeUntil.getHours())
+    .setMinutes(0)
+    .setOnChangeAction(CardService.newAction()
+      .setFunctionName("updateCard"));
+
+  return snoozeTimePicker;
 }
