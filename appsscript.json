@@ -32,7 +32,15 @@
           "unconditional": {},
           "onTriggerFunction": "onGmailMessage"
         }
-      ]
+      ],
+      "composeTrigger": {
+        "selectActions": [
+          {
+            "text": "Insert map",
+            "runFunction": "onGmailCompose"
+          }
+        ]
+      }
     },
     "calendar": {
       "eventOpenTrigger": {
