@@ -1,8 +1,3 @@
-// useful link for getting info from gmail:
-// https://developers.google.com/apps-script/reference/gmail/gmail-app
-// https://developers.google.com/apps-script/reference/gmail/gmail-message
-
-
 var now = new Date();
 var snoozeUntil = new Date(now.getTime()+(2 * 60 * 60 * 1000)); // set default snooze time as now + 2 hours
 
@@ -10,7 +5,16 @@ var snoozeUntil = new Date(now.getTime()+(2 * 60 * 60 * 1000)); // set default s
  * Callback for what is seen when viewing the Homepage. Left as empty as there should be no action for viewing
  * the Homepage. We should only view the add-on when an e-mail is selected.
  */
-function onHomepage(e) { }
+function onHomepage(e) { 
+  var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
+  if(scriptProperties.getProperty("map")==null){
+    var defaultsavedlocations = [["UWA", "-31.981179,115.819910"]]
+    // map stores all saved locations
+    scriptProperties.setProperty("map", JSON.stringify(defaultsavedlocations));
+    // mapselect is used to set the default values of map link
+    scriptProperties.setProperty("mapselected", JSON.stringify(["",""]));
+  }
+}
 
 
 /**

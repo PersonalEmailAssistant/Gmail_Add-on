@@ -1,14 +1,3 @@
-/**
- * currently:
- *  sets a timer
- *  removes email from inbox
- *  once timer is up, forwards the email
- *
- * to do:
- *  - it would be good if the user could view the emails that are currently snoozing
- *        (i think this could be done by adding labels)
- */
-
 function snoozeTimer(email){
   // set a time based trigger
   var trigger = ScriptApp.newTrigger('forwardEmail')

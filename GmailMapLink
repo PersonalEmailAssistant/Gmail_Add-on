@@ -1,22 +1,3 @@
-/**
- * Callback for rendering the card for a specific Gmail message.
- * @param {Object} e The event object.
- * @return {CardService.Card} The card to show to the user.
- */
-function onGmailMessage(e) {
-  console.log(e);
-  // Get the ID of the message the user has open.
-  var messageId = e.gmail.messageId;
-
-  // Get an access token scoped to the current message and use it for GmailApp
-  // calls.
-  var accessToken = e.gmail.accessToken;
-  GmailApp.setCurrentMessageAccessToken(accessToken);
-
-  // Get the subject of the email.
-  var message = GmailApp.getMessageById(messageId);
-  return
-}
 
 /**
  * Callback for rendering the card for the compose action dialog.
@@ -24,19 +5,25 @@ function onGmailMessage(e) {
  * @return {CardService.Card} The card to show to the user.
  */
 function onGmailCompose(e) {
-  console.log(e);
+  var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
+  var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
+  console.log(selectedlocation)
   var header = CardService.newCardHeader()
       .setTitle('Insert Map Link')
   var input1 = CardService.newTextInput()
       .setFieldName('text1')
       .setTitle('Location')
+      .setValue(selectedlocation[0])
   var input2 = CardService.newTextInput()
       .setFieldName('text2')
-      .setTitle('longitude and latitude')
+      .setTitle('latitude and longitude')
+      .setValue(selectedlocation[1])
   var action = CardService.newAction()
       .setFunctionName('onGmailInsertLink');
   var action1 = CardService.newAction()
       .setFunctionName('onGmailInsertMap');
+  var addlocation = CardService.newAction()
+      .setFunctionName('saveNewLocation');
   var button = CardService.newTextButton()
       .setText('Insert map link')
       .setOnClickAction(action)
@@ -45,19 +32,48 @@ function onGmailCompose(e) {
       .setText('Insert static map')
       .setOnClickAction(action1)
       .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
+  var button2 = CardService.newTextButton()
+      .setText('Save Location')
+      .setOnClickAction(addlocation)
+      .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
   var buttonSet = CardService.newButtonSet()
-      .addButton(button);
-  var buttonSet1 = CardService.newButtonSet()
-      .addButton(button1);
+      .addButton(button1)
+      .addButton(button)
+      .addButton(button2);
   // Assemble the widgets and return the card.
   var section = CardService.newCardSection()
       .addWidget(input1)
       .addWidget(input2)
-      .addWidget(buttonSet)
-      .addWidget(buttonSet1);
+      .addWidget(buttonSet);
+  
+  // add buttons with saved locations
+  var scriptProperties = PropertiesService.getUserProperties();
+  var savedlocation = JSON.parse(scriptProperties.getProperty("map"));
+
+  var mapsavedSection = CardService.newCardSection()
+      .setHeader("Saved Locations");
+
+  var mapsavedButtonSet = CardService.newButtonSet();
+  savedlocation.forEach(function(value) {
+    var savedaction = CardService.newAction()
+    .setFunctionName('setDefaultMapLocation')
+    .setParameters({name:value[0], coordinates:value[1]});
+    var mapButton = CardService.newTextButton()
+      .setText(value[0])
+      .setBackgroundColor("#71c0eb")
+      .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+      .setOnClickAction(savedaction);
+    mapsavedButtonSet.addButton(mapButton);
+  });
+ mapsavedSection
+    .addWidget(mapsavedButtonSet);
+
+
+
   var card = CardService.newCardBuilder()
       .setHeader(header)
-      .addSection(section);
+      .addSection(section)
+      .addSection(mapsavedSection);
   return card.build();
 }
 
@@ -86,6 +102,24 @@ function onGmailInsertLink(e) {
           .setUpdateType(CardService.UpdateDraftBodyType.IN_PLACE_INSERT))
       .build();
   return response;
+}
+
+function setDefaultMapLocation(e){
+  //console.log(e.parameters.name);
+  //console.log(e.parameters.coordinates);
+  var scriptProperties = PropertiesService.getUserProperties();
+  scriptProperties.setProperty("mapselected", JSON.stringify([e.parameters.name,e.parameters.coordinates]));
+  return CardService.newNavigation().updateCard(onGmailCompose())
+}
+
+function saveNewLocation(e){
+  var scriptProperties = PropertiesService.getUserProperties(); // this should allow for long-term storage
+  var savedlocation = JSON.parse(scriptProperties.getProperty("map"));
+  savedlocation.push([e.formInput.text1,e.formInput.text2])
+  console.log(savedlocation)
+  scriptProperties.setProperty("map", JSON.stringify(savedlocation));
+  scriptProperties.setProperty("mapselected", JSON.stringify([e.formInput.text1,e.formInput.text2]));
+  return CardService.newNavigation().updateCard(onGmailCompose())
 }
 
 
