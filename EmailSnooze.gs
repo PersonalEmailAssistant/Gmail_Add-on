@@ -12,7 +12,7 @@ function snoozeTimer(email){
   // stores email information so that it can be used by forwardEmail later
   var id = trigger.getUniqueId();
   var scriptProperties = PropertiesService.getScriptProperties();
-  scriptProperties.setProperty(id, email.gmail.threadId);
+  scriptProperties.setProperty(id, email.gmail.messageId);
 
   // check if the user has entered additional recipients to recieve snoozed email
   if (email.formInput.snoozerecipients!=undefined) scriptProperties.setProperty(id+"additional", email.formInput.snoozerecipients);
@@ -20,6 +20,7 @@ function snoozeTimer(email){
 
   // move email out of inbox
   GmailApp.moveThreadToArchive(thread);
+  GmailApp.refreshThread(thread);
 }
 
 /**
