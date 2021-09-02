@@ -2,7 +2,7 @@ var now = new Date();
 var snoozeUntil = new Date(now.getTime()+(2 * 60 * 60 * 1000)); // set default snooze time as now + 2 hours
 GmailApp.createLabel("Snoozed");
 var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
-if(scriptProperties.getProperty("map")===null || scriptProperties.getProperty("map")[0].length!=3){
+if(scriptProperties.getProperty("map")===null || JSON.parse(scriptProperties.getProperty("map"))[0].length!=3){
   var defaultsavedlocations = [["UWA", "-31.981179,115.819910"," "]]
   // map stores all saved locations
   scriptProperties.setProperty("map", JSON.stringify(defaultsavedlocations));
