@@ -10,6 +10,10 @@ function snoozeTimer(email){
   var scriptProperties = PropertiesService.getScriptProperties();
   scriptProperties.setProperty(id, email.gmail.messageId);
 
+  // check if the user has entered additional recipients to recieve snoozed email
+  if (email.formInput.snoozerecipients!=undefined) scriptProperties.setProperty(id+"additional", email.formInput.snoozerecipients);
+  else scriptProperties.setProperty(id+"additional", "");
+
   // move email out of inbox into trash
   var thread = GmailApp.getThreadById(email.gmail.threadId);
   GmailApp.moveThreadToTrash(thread);
@@ -32,7 +36,12 @@ function forwardEmail(e) {
   // gets the current user's email address
   var emailAddress = Session.getActiveUser().getEmail();
 
-  // forwards the message to current user
+  // check if there are additional recipients to forward to
+  var additionalrecipients = scriptProperties.getProperty(triggerId+"additional");
+  if (additionalrecipients != "") emailAddress+=","+additionalrecipients;
+  console.log(emailAddress)
+
+  // forwards the message to addresses
   message.forward(emailAddress);
 }
 

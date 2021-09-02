@@ -38,7 +38,8 @@ function onGmailMessage(e){
     .addWidget(snoozeQuickButtons())
     .addWidget(snoozeDatePicker())
     .addWidget(snoozeTimePicker())
-    .addWidget(CardService.newButtonSet().addButton(snoozeButton));
+    .addWidget(CardService.newButtonSet().addButton(snoozeButton))
+    .addWidget(snoozeAddRecipients());
 
   // Card which includes the Snooze components only
   var card = CardService.newCardBuilder()
@@ -88,6 +89,8 @@ function updateCard(e) {
   } else {
     section.addWidget(btnSet.addButton(snoozeButton));
   }
+
+  section.addWidget(snoozeAddRecipients());
 
   var card = CardService.newCardBuilder()
     .addSection(section);
@@ -164,4 +167,12 @@ function snoozeTimePicker() {
       .setFunctionName("updateCard"));
 
   return snoozeTimePicker;
+}
+
+function snoozeAddRecipients(){
+    var addrecipients = CardService.newTextInput()
+    .setFieldName("snoozerecipients")
+    .setTitle("Include Additional Recipients")
+    .setValue("");
+  return addrecipients;
 }
