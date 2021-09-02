@@ -1,22 +1,25 @@
 function snoozeTimer(email){
+  var thread = GmailApp.getThreadById(email.gmail.threadId);
+  var label = GmailApp.getUserLabelByName("Snoozed");
+  thread.addLabel(label);
+
   // set a time based trigger
   var trigger = ScriptApp.newTrigger('forwardEmail')
-  .timeBased()
-  .after(snoozeUntil.getTime()-now.getTime()) // time in milliseconds
-  .create();
+    .timeBased()
+    .after(snoozeUntil.getTime()-now.getTime()) // time in milliseconds
+    .create();
 
   // stores email information so that it can be used by forwardEmail later
   var id = trigger.getUniqueId();
   var scriptProperties = PropertiesService.getScriptProperties();
-  scriptProperties.setProperty(id, email.gmail.messageId);
+  scriptProperties.setProperty(id, email.gmail.threadId);
 
   // check if the user has entered additional recipients to recieve snoozed email
   if (email.formInput.snoozerecipients!=undefined) scriptProperties.setProperty(id+"additional", email.formInput.snoozerecipients);
   else scriptProperties.setProperty(id+"additional", "");
 
-  // move email out of inbox into trash
-  var thread = GmailApp.getThreadById(email.gmail.threadId);
-  GmailApp.moveThreadToTrash(thread);
+  // move email out of inbox
+  GmailApp.moveThreadToArchive(thread);
 }
 
 /**
@@ -32,17 +35,22 @@ function forwardEmail(e) {
   var scriptProperties = PropertiesService.getScriptProperties();
   var email = scriptProperties.getProperty(triggerId);
   var message = GmailApp.getMessageById(email);
-
+  message.getThread().moveToTrash();
+  
+  
   // gets the current user's email address
   var emailAddress = Session.getActiveUser().getEmail();
 
   // check if there are additional recipients to forward to
   var additionalrecipients = scriptProperties.getProperty(triggerId+"additional");
   if (additionalrecipients != "") emailAddress+=","+additionalrecipients;
-  console.log(emailAddress)
 
   // forwards the message to addresses
   message.forward(emailAddress);
+
+  // remove label from original email and move to trash
+  var label = GmailApp.getUserLabelByName("Snoozed");
+  message.getThread().removeLabel(label);
 }
 
 

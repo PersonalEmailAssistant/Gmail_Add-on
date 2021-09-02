@@ -1,5 +1,6 @@
 var now = new Date();
 var snoozeUntil = new Date(now.getTime()+(2 * 60 * 60 * 1000)); // set default snooze time as now + 2 hours
+GmailApp.createLabel("Snoozed");
 
 /**
  * Callback for what is seen when viewing the Homepage. Left as empty as there should be no action for viewing
