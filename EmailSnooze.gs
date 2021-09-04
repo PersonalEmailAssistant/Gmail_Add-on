@@ -56,6 +56,7 @@ function forwardEmail(e) {
 
 
 function buttonSnoozeTimeChange(e, hours){
+  console.log(hours);
   snoozeUntil = new Date(now.getTime()+hours*3600000);
   console.log(snoozeUntil);
   snoozeTimer(e);
@@ -64,6 +65,14 @@ function buttonSnoozeTimeChange(e, hours){
  * Actions for the Snooze Quick Button widgets. Each calls the buttonSnoozeTimeChange
  * function, with the amount of hours
  */
-function twoHoursSnooze(e){ buttonSnoozeTimeChange(e, 2);}
-function tomorrowSnooze(e){ buttonSnoozeTimeChange(e, 24);}
-function nextWeekSnooze(e){ buttonSnoozeTimeChange(e, 24*7);}
+function quickSnoozeButtons(e){buttonSnoozeTimeChange(e, +e.parameters.hours);}
+
+function addNewQuickButton(e){
+  checkPropertyquicksnooze();
+  var scriptProperties = PropertiesService.getUserProperties();
+  var quicksnoozebuttons = JSON.parse(scriptProperties.getProperty("quicksnooze"));
+  var buttonname = e.formInput.addquickbuttoninput + " Hours"
+  quicksnoozebuttons.push([buttonname, ""+e.formInput.addquickbuttoninput]);
+  scriptProperties.setProperty("quicksnooze", JSON.stringify(quicksnoozebuttons));
+  return updateCard(e)
+}

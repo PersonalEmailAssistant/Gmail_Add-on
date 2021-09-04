@@ -1,22 +1,12 @@
 var now = new Date();
 var snoozeUntil = new Date(now.getTime()+(2 * 60 * 60 * 1000)); // set default snooze time as now + 2 hours
 GmailApp.createLabel("Snoozed");
-var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
-if(scriptProperties.getProperty("map")===null || JSON.parse(scriptProperties.getProperty("map"))[0].length!=3){
-  var defaultsavedlocations = [["UWA", "-31.981179,115.819910"," "]]
-  // map stores all saved locations
-  scriptProperties.setProperty("map", JSON.stringify(defaultsavedlocations));
-  // mapselect is used to set the default values of map link
-  scriptProperties.setProperty("mapselected", JSON.stringify(["","",""]));
-}
 
 /**
  * Callback for what is seen when viewing the Homepage. Left as empty as there should be no action for viewing
  * the Homepage. We should only view the add-on when an e-mail is selected.
  */
 function onHomepage(e) {}
-
-
 
 /**
  * Callback for rendering the card for a specific Gmail message. Only visable after the user has selected an email
@@ -44,7 +34,8 @@ function onGmailMessage(e){
 
   // Card which includes the Snooze components only
   var card = CardService.newCardBuilder()
-    .addSection(snoozeSection);
+    .addSection(snoozeSection)
+    .addSection(snoozeAddQuickButtonSection());
 
   return card.build();
 }
@@ -94,7 +85,8 @@ function updateCard(e) {
   section.addWidget(snoozeAddRecipients());
 
   var card = CardService.newCardBuilder()
-    .addSection(section);
+    .addSection(section)
+    .addSection(snoozeAddQuickButtonSection());
 
   return CardService.newNavigation().updateCard(card.build());
 
@@ -109,31 +101,23 @@ function updateCard(e) {
  * @return {CardService.Card} The button set containing each Snooze Quick Button
  */
 function snoozeQuickButtons() {
+  var scriptProperties = PropertiesService.getUserProperties();
+  checkPropertyquicksnooze();
+  var quicksnoozetimes = JSON.parse(scriptProperties.getProperty("quicksnooze"));
 
-  // Create actions for each button
-  var twohoursaction = CardService.newAction().setFunctionName('twoHoursSnooze');
-  var tomorrowaction = CardService.newAction().setFunctionName('tomorrowSnooze');
-  var nextweekaction = CardService.newAction().setFunctionName('nextWeekSnooze');
+  var snoozeButtonSet = CardService.newButtonSet();
 
-  // Create the buttons
-  var twohoursbutton = CardService.newTextButton()
-      .setText('Two Hours')
-      .setOnClickAction(twohoursaction)
-      .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
-  var tomorrowbutton = CardService.newTextButton()
-      .setText('Tomorrow')
-      .setOnClickAction(tomorrowaction)
-      .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
-  var nextweekbutton = CardService.newTextButton()
-      .setText('Next Week')
-      .setOnClickAction(nextweekaction)
-      .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
-
-  // Create the button set
-  var snoozeButtonSet = CardService.newButtonSet()
-      .addButton(twohoursbutton)
-      .addButton(tomorrowbutton)
-      .addButton(nextweekbutton);
+  quicksnoozetimes.forEach(function(value) {
+    console.log(value[1]);
+    var savedaction = CardService.newAction()
+    .setFunctionName('quickSnoozeButtons')
+    .setParameters({hours:value[1]});
+    var mapButton = CardService.newTextButton()
+      .setText(value[0])
+      .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+      .setOnClickAction(savedaction);
+    snoozeButtonSet.addButton(mapButton);
+  });
 
   return snoozeButtonSet;
 }
@@ -147,7 +131,7 @@ function snoozeDatePicker() {
   var snoozeDatePicker = CardService.newDatePicker()
     .setTitle("Enter the date to snooze until.")
     .setFieldName("date_field")
-    .setValueInMsSinceEpoch(snoozeUntil.getTime()+(8*3600000)) // its ugly but it works
+    .setValueInMsSinceEpoch(snoozeUntil.getTime()+(8*3600000))
     .setOnChangeAction(CardService.newAction()
       .setFunctionName("updateCard"));
 
@@ -176,4 +160,22 @@ function snoozeAddRecipients(){
     .setTitle("Include Additional Recipients")
     .setValue("");
   return addrecipients;
+}
+
+function snoozeAddQuickButtonSection(){
+  var action = CardService.newAction()
+      .setFunctionName('addNewQuickButton')
+  var section = CardService.newCardSection();
+    //.setHeader("Add New Quick Snooze Button");
+  var addquickbutton = CardService.newTextInput()
+    .setFieldName("addquickbuttoninput")
+    .setTitle("Enter new Snooze time in hours")
+    .setValue("");
+  var submitbutton = CardService.newTextButton()
+    .setText("add quick button")
+    .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+    .setOnClickAction(action);
+  section.addWidget(addquickbutton);
+  section.addWidget(submitbutton);
+  return section;
 }
