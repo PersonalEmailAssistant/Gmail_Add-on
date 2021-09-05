@@ -6,7 +6,10 @@ GmailApp.createLabel("Snoozed");
  * Callback for what is seen when viewing the Homepage. Left as empty as there should be no action for viewing
  * the Homepage. We should only view the add-on when an e-mail is selected.
  */
-function onHomepage(e) {}
+function onHomepage(e) {
+  var scriptProperties = PropertiesService.getUserProperties();
+  scriptProperties.setProperty("selectedrecipients", " ");
+}
 
 /**
  * Callback for rendering the card for a specific Gmail message. Only visable after the user has selected an email
@@ -30,7 +33,8 @@ function onGmailMessage(e){
     .addWidget(snoozeDatePicker())
     .addWidget(snoozeTimePicker())
     .addWidget(CardService.newButtonSet().addButton(snoozeButton))
-    .addWidget(snoozeAddRecipients());
+    .addWidget(snoozeAddRecipients())
+    .addWidget(emailSnoozeRecipientGroupsButtons());
 
   // Card which includes the Snooze components only
   var card = CardService.newCardBuilder()
@@ -83,6 +87,7 @@ function updateCard(e) {
   }
 
   section.addWidget(snoozeAddRecipients());
+  section.addWidget(emailSnoozeRecipientGroupsButtons());
 
   var card = CardService.newCardBuilder()
     .addSection(section)
@@ -143,7 +148,6 @@ function snoozeDatePicker() {
  * @return {CardService.Card} The Time Picker widget
  */
 function snoozeTimePicker() {
-
   var snoozeTimePicker = CardService.newTimePicker()
     .setFieldName("time_field")
     .setHours(snoozeUntil.getHours())
@@ -155,10 +159,13 @@ function snoozeTimePicker() {
 }
 
 function snoozeAddRecipients(){
-    var addrecipients = CardService.newTextInput()
+  checkPropertySelectedSnoozeRecipients();
+  var scriptProperties = PropertiesService.getUserProperties();
+  var selectedrecipients = scriptProperties.getProperty("selectedrecipients");
+  var addrecipients = CardService.newTextInput()
     .setFieldName("snoozerecipients")
     .setTitle("Include Additional Recipients")
-    .setValue("");
+    .setValue(selectedrecipients);
   return addrecipients;
 }
 

@@ -18,3 +18,17 @@ function checkPropertyquicksnooze(){
     scriptProperties.setProperty("quicksnooze", JSON.stringify(defaultquicksnooze));
   }
 }
+
+function checkPropertyrecipientgroups(){
+  var scriptProperties = PropertiesService.getUserProperties();
+  if (scriptProperties.getProperty("recipientgroups")===null){
+    scriptProperties.setProperty("recipientgroups", JSON.stringify([["test","22721679@student.uwa.edu.au,lilyfel3@gmail.com"]]));// temp email addresses
+  }
+}
+
+function checkPropertySelectedSnoozeRecipients(){
+  var scriptProperties = PropertiesService.getUserProperties();
+  if (scriptProperties.getProperty("selectedrecipients")===null){
+    scriptProperties.setProperty("selectedrecipients", " ");
+  }
+}

@@ -4,6 +4,7 @@
  * @return {CardService.Card} The card to show to the user.
  */
 function onGmailCompose(e) {
+  checkPropertymap();
   var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
   var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
   console.log(selectedlocation);
@@ -146,6 +147,7 @@ function setDefaultmapLocation(e){
 }
 
 function saveNewLocation(e){
+  checkPropertymap();
   var scriptProperties = PropertiesService.getUserProperties(); // this should allow for long-term storage
   var savedlocation = JSON.parse(scriptProperties.getProperty("map"));
   var message = "";

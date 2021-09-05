@@ -1,5 +1,5 @@
-function snoozeTimer(email){
-  var thread = GmailApp.getThreadById(email.gmail.threadId);
+function snoozeTimer(e){
+  var thread = GmailApp.getThreadById(e.gmail.threadId);
   var label = GmailApp.getUserLabelByName("Snoozed");
   thread.addLabel(label);
 
@@ -12,15 +12,17 @@ function snoozeTimer(email){
   // stores email information so that it can be used by forwardEmail later
   var id = trigger.getUniqueId();
   var scriptProperties = PropertiesService.getScriptProperties();
-  scriptProperties.setProperty(id, email.gmail.messageId);
+  scriptProperties.setProperty("selectedrecipients", " ");
+  scriptProperties.setProperty(id, e.gmail.messageId);
 
   // check if the user has entered additional recipients to recieve snoozed email
-  if (email.formInput.snoozerecipients!=undefined) scriptProperties.setProperty(id+"additional", email.formInput.snoozerecipients);
+  if (e.formInput.snoozerecipients!=undefined) scriptProperties.setProperty(id+"additional", e.formInput.snoozerecipients);
   else scriptProperties.setProperty(id+"additional", "");
 
   // move email out of inbox
   GmailApp.moveThreadToArchive(thread);
   GmailApp.refreshThread(thread);
+  return updateCard(e)
 }
 
 /**
@@ -36,22 +38,26 @@ function forwardEmail(e) {
   var scriptProperties = PropertiesService.getScriptProperties();
   var email = scriptProperties.getProperty(triggerId);
   var message = GmailApp.getMessageById(email);
-  message.getThread().moveToTrash();
-  
-  
-  // gets the current user's email address
-  var emailAddress = Session.getActiveUser().getEmail();
-
-  // check if there are additional recipients to forward to
-  var additionalrecipients = scriptProperties.getProperty(triggerId+"additional");
-  if (additionalrecipients != "") emailAddress+=","+additionalrecipients;
-
-  // forwards the message to addresses
-  message.forward(emailAddress);
-
-  // remove label from original email and move to trash
+  var thread =  message.getThread();
   var label = GmailApp.getUserLabelByName("Snoozed");
-  message.getThread().removeLabel(label);
+  console.log(thread.getLabels());
+
+  // only forwards email if it is found in the Snooze folder
+  if (thread.getLabels().includes(label)){
+    // gets the current user's email address
+    var emailAddress = Session.getActiveUser().getEmail();
+
+    // check if there are additional recipients to forward to
+    var additionalrecipients = scriptProperties.getProperty(triggerId+"additional");
+    if (additionalrecipients != "") emailAddress+=","+additionalrecipients;
+
+    // forwards the message to addresses
+    message.forward(emailAddress);
+
+    // remove label from original email and move to trash
+    thread.removeLabel(label);
+    //thread.moveToTrash();
+  }
 }
 
 
