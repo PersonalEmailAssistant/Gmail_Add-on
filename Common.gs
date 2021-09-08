@@ -9,6 +9,19 @@ GmailApp.createLabel("Snoozed");
 function onHomepage(e) {
   var scriptProperties = PropertiesService.getUserProperties();
   scriptProperties.setProperty("selectedrecipients", " ");
+
+  // manage custom buttons 
+  var action = CardService.newAction().setFunctionName('manageCustomButtonsCard');
+  var managecustombuttons = CardService.newTextButton()
+    .setText('Manage Custom Buttons')
+    .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+    .setOnClickAction(action);
+  var manageCustomButtonsSection = CardService.newCardSection().addWidget(managecustombuttons);
+
+
+  // need to add a check to ensure user is currently composing an email
+  var recipientGroupsSection = CardService.newCardSection().addWidget(composeEmailRecipientGroupsButtons());
+  return CardService.newCardBuilder().addSection(recipientGroupsSection).addSection(manageCustomButtonsSection).build();
 }
 
 /**
@@ -17,7 +30,6 @@ function onHomepage(e) {
  * @return {CardService.Card} The card to show to the user.
  */
 function onGmailMessage(e){
-
   var action = CardService.newAction()
     .setFunctionName('snoozeTimer')
     .setParameters({id: e.messageMetadata.messageId});
@@ -38,8 +50,7 @@ function onGmailMessage(e){
 
   // Card which includes the Snooze components only
   var card = CardService.newCardBuilder()
-    .addSection(snoozeSection)
-    .addSection(snoozeAddQuickButtonSection());
+    .addSection(snoozeSection);
 
   return card.build();
 }
@@ -90,8 +101,7 @@ function updateCard(e) {
   section.addWidget(emailSnoozeRecipientGroupsButtons());
 
   var card = CardService.newCardBuilder()
-    .addSection(section)
-    .addSection(snoozeAddQuickButtonSection());
+    .addSection(section);
 
   return CardService.newNavigation().updateCard(card.build());
 
@@ -167,22 +177,4 @@ function snoozeAddRecipients(){
     .setTitle("Include Additional Recipients")
     .setValue(selectedrecipients);
   return addrecipients;
-}
-
-function snoozeAddQuickButtonSection(){
-  var action = CardService.newAction()
-      .setFunctionName('addNewQuickButton')
-  var section = CardService.newCardSection();
-    //.setHeader("Add New Quick Snooze Button");
-  var addquickbutton = CardService.newTextInput()
-    .setFieldName("addquickbuttoninput")
-    .setTitle("Enter new Snooze time in hours")
-    .setValue("");
-  var submitbutton = CardService.newTextButton()
-    .setText("add quick button")
-    .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
-    .setOnClickAction(action);
-  section.addWidget(addquickbutton);
-  section.addWidget(submitbutton);
-  return section;
 }

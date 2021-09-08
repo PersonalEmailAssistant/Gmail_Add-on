@@ -73,12 +73,4 @@ function buttonSnoozeTimeChange(e, hours){
  */
 function quickSnoozeButtons(e){buttonSnoozeTimeChange(e, +e.parameters.hours);}
 
-function addNewQuickButton(e){
-  checkPropertyquicksnooze();
-  var scriptProperties = PropertiesService.getUserProperties();
-  var quicksnoozebuttons = JSON.parse(scriptProperties.getProperty("quicksnooze"));
-  var buttonname = e.formInput.addquickbuttoninput + " Hours"
-  quicksnoozebuttons.push([buttonname, ""+e.formInput.addquickbuttoninput]);
-  scriptProperties.setProperty("quicksnooze", JSON.stringify(quicksnoozebuttons));
-  return updateCard(e)
-}
+
