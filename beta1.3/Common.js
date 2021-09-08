@@ -383,10 +383,13 @@ function onGmailMessage(e){
     .addWidget(CardService.newButtonSet().addButton(snoozeButton))
     .addWidget(snoozeAddRecipients())
     .addWidget(emailSnoozeRecipientGroupsButtons());
+  
+  var footer = buildPreviousAndRootButtonSet();
 
   // Card which includes the Snooze components only
   var card = CardService.newCardBuilder()
-    .addSection(snoozeSection);
+    .addSection(snoozeSection)
+    .setFixedFooter(footer);
 
   return card.build();
 }
