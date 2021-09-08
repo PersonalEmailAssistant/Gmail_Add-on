@@ -116,11 +116,6 @@ function onSearch(event) {
     .build();
   }
 
-  var card = buildTeamListCard_(people);
-  var navigation = CardService.newNavigation().pushCard(card);
-  return CardService.newActionResponseBuilder()
-  .setNavigation(navigation)
-  .build();
 }
 
 
