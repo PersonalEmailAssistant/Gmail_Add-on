@@ -1,0 +1,74 @@
+{
+  "timeZone": "Australia/Perth",
+  "dependencies": {
+    "enabledAdvancedServices": [{
+      "userSymbol": "AdminDirectory",
+      "serviceId": "admin",
+      "version": "directory_v1"
+    }],
+    "libraries": [{
+      "userSymbol": "LodashGS",
+      "libraryId": "1SQ0PlSMwndIuOAgtVJdjxsuXueECtY9OGejVDS37ckSVbMll73EXf2PW",
+      "version": "5"
+    }]
+  },
+  "exceptionLogging": "STACKDRIVER",
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/admin.directory.user.readonly",
+    "https://www.googleapis.com/auth/gmail.addons.execute",
+    "https://www.googleapis.com/auth/gmail.addons.current.action.compose",
+    "https://www.googleapis.com/auth/gmail.addons.current.message.readonly",
+    "https://www.googleapis.com/auth/gmail.addons.current.message.metadata",
+    "https://www.googleapis.com/auth/script.locale",
+    "https://www.googleapis.com/auth/script.send_mail",
+    "https://www.googleapis.com/auth/script.scriptapp",
+    "https://www.googleapis.com/auth/calendar.addons.execute",
+    "https://www.googleapis.com/auth/calendar.addons.current.event.read",
+    "https://www.googleapis.com/auth/drive.addons.metadata.readonly",
+    "https://mail.google.com/",
+    "https://www.googleapis.com/auth/drive.file"
+  ],
+  "urlFetchWhitelist": [],
+  "runtimeVersion": "V8",
+  "addOns": {
+    "common": {
+      "name": "Robby",
+      "logoUrl": "https://static.wikia.nocookie.net/p__/images/9/95/Robby_the_Robot01.png/revision/latest/top-crop/width/360/height/360?cb=20201228181530&path-prefix=protagonist",
+      "layoutProperties": {
+        "primaryColor": "#008B8B",
+        "secondaryColor": "#2196F3"
+      },
+      "homepageTrigger": {
+        "enabled": false
+      },
+      "universalActions": [{
+        "label": "Feedback",
+        "openLink": "https://github.com/googleworkspace/add-ons-samples/issues"
+      }],
+      "openLinkUrlPrefixes": [
+        "https://github.com/googleworkspace/add-ons-samples/"
+      ]
+    },
+    "gmail": {
+      "contextualTriggers": [{
+        "unconditional": {
+        },
+        "onTriggerFunction": "onGmailMessageSelected"
+      }],
+      "composeTrigger": {
+        "selectActions": [
+          {
+            "text": "Insert map",
+            "runFunction": "onGmailCompose"
+          }
+        ]
+      }
+    },
+    "calendar": {
+      "eventOpenTrigger": {
+        "runFunction": "onCalendarEventOpen"
+      }
+    }
+  }
+}
