@@ -20,8 +20,8 @@ function onHomepage(e) {
 
 
   // need to add a check to ensure user is currently composing an email
-  var recipientGroupsSection = CardService.newCardSection().addWidget(composeEmailRecipientGroupsButtons());
-  return CardService.newCardBuilder().addSection(recipientGroupsSection).addSection(manageCustomButtonsSection).build();
+  //var recipientGroupsSection = CardService.newCardSection().addWidget(composeEmailRecipientGroupsButtons());
+  return CardService.newCardBuilder().addSection(manageCustomButtonsSection).build();
 }
 
 /**
@@ -178,3 +178,4 @@ function snoozeAddRecipients(){
     .setValue(selectedrecipients);
   return addrecipients;
 }
+

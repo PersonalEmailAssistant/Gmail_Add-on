@@ -22,7 +22,7 @@ function checkPropertyquicksnooze(){
 function checkPropertyrecipientgroups(){
   var scriptProperties = PropertiesService.getUserProperties();
   if (scriptProperties.getProperty("recipientgroups")===null){
-    scriptProperties.setProperty("recipientgroups", JSON.stringify([["test","22721679@student.uwa.edu.au,lilyfel3@gmail.com"]]));// temp email addresses
+    scriptProperties.setProperty("recipientgroups", JSON.stringify([["test","test@example.com, test2@example.com"]]));// temp email addresses
   }
 }
 
@@ -74,12 +74,84 @@ function manageCustomButtonsCard(){
     .addWidget(snoozeButtonSet)
     .addWidget(snoozetimeinput)
     .addWidget(snoozetimesubmit)
-    .setNumUncollapsibleWidgets(1)
+    .setCollapsible(true);
 
-  return CardService.newCardBuilder().addSection(snoozeSection).build();
+
+  /// recipient groups buttons
+  var recipientgroups = JSON.parse(scriptProperties.getProperty("recipientgroups"));
+
+  var recipientgroupsButtonSet = CardService.newButtonSet();
+  recipientgroups.forEach(function(value) {
+    var removeaction = CardService.newAction()
+    .setFunctionName('removePropertiesServiceItem')
+    .setParameters({name:"recipientgroups", item:JSON.stringify(value)});
+    var button = CardService.newTextButton()
+      .setText(value[0])
+      .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+      .setOnClickAction(removeaction);
+    recipientgroupsButtonSet.addButton(button);
+  });
+
+  var addaction = CardService.newAction().setFunctionName('addNewRecipientGroup');
+  var recipientgroupinput1 = CardService.newTextInput()
+    .setFieldName("recipientgroupnameinput")
+    .setTitle("Recipient Group Name");
+  var recipientgroupinput2 = CardService.newTextInput()
+    .setFieldName("recipientgroupaddressesinput")
+    .setTitle("Recipient's Email Adresses (comma separated)");
+  var recipientgroupsubmit = CardService.newTextButton()
+    .setText("Add Recipient Group Button")
+    .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+    .setOnClickAction(addaction);
+
+  var recipientSection = CardService.newCardSection()
+    .setHeader("Recipient Groups Quick Buttons")
+    .addWidget(info1)
+    .addWidget(recipientgroupsButtonSet)
+    .addWidget(recipientgroupinput1)
+    .addWidget(recipientgroupinput2)
+    .addWidget(recipientgroupsubmit)
+    .setCollapsible(true);
+
+  
+  // map link buttons
+  checkPropertymap();
+  var mapsaved = JSON.parse(scriptProperties.getProperty("map"));
+  var mapButtonSet = CardService.newButtonSet();
+
+  mapsaved.forEach(function(value) {
+    var removeaction = CardService.newAction()
+    .setFunctionName('removePropertiesServiceItem')
+    .setParameters({name:"map", item:JSON.stringify(value)});
+    var button = CardService.newTextButton()
+      .setText(value[0])
+      .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+      .setOnClickAction(removeaction);
+    mapButtonSet.addButton(button);
+  });
+  var mapSection = CardService.newCardSection()
+    .setHeader("Map Link Quick Buttons")
+    .addWidget(info1)
+    .addWidget(mapButtonSet)
+    .setCollapsible(true);
+
+  var card = CardService.newCardBuilder().addSection(snoozeSection).addSection(recipientSection).addSection(mapSection)
+  return card.build();
 }
 
-function addPropertiesServiceItem(e){}
+function addNewRecipientGroup(e){
+  var name = e.formInput.recipientgroupnameinput;
+  var addresses = e.formInput.recipientgroupaddressesinput;
+  if (name == undefined || addresses == undefined) return;
+  checkPropertyrecipientgroups();
+  var scriptProperties = PropertiesService.getUserProperties();
+  var array = JSON.parse(scriptProperties.getProperty("recipientgroups"));
+  console.log(array);
+  array.push([name, addresses]);
+  console.log(array);
+  scriptProperties.setProperty("recipientgroups", JSON.stringify(array));
+  return manageCustomButtonsCard();
+}
 
 function addNewQuickButton(e){
   console.log(e.formInput.addquickbuttoninput);
