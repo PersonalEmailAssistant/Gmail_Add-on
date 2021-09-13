@@ -3,7 +3,7 @@
  * @param {Object} e The event object.
  * @return {CardService.Card} The card to show to the user.
  */
-function onGmailCompose(e) {
+ function onGmailCompose(e) {
   checkPropertymap();
   var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
   var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
@@ -71,14 +71,18 @@ function onGmailCompose(e) {
     mapsavedButtonSet.addButton(mapButton);
   });
  mapsavedSection
-    .addWidget(mapsavedButtonSet);
+    .addWidget(mapsavedButtonSet)
+    .addWidget(CardService.newTextParagraph().setText("\n\n"))
+    .addWidget(getManangeCustomButtons());
 
-
+  var footer = buildPreviousAndRootButtonSet();
 
   var card = CardService.newCardBuilder()
+      .setName('map link')
       .setHeader(header)
       .addSection(section)
-      .addSection(mapsavedSection);
+      .addSection(mapsavedSection)
+      .setFixedFooter(footer);
   return card.build();
 }
 

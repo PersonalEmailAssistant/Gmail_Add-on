@@ -39,7 +39,6 @@ function checkPropertySelectedSnoozeRecipients(){
 function manageCustomButtonsCard(){
   var scriptProperties = PropertiesService.getUserProperties();
 
-
   //// snooze email buttons
   checkPropertyquicksnooze();
   var quicksnoozetimes = JSON.parse(scriptProperties.getProperty("quicksnooze"));
@@ -56,7 +55,6 @@ function manageCustomButtonsCard(){
     snoozeButtonSet.addButton(button);
   });
   var info1 = CardService.newTextParagraph().setText("Click to remove saved buttons.");
-  //var info2 = CardService.newTextParagraph().setText("Click to remove saved buttons.");
 
   var addaction = CardService.newAction()
   .setFunctionName('addNewQuickButton');
@@ -135,8 +133,23 @@ function manageCustomButtonsCard(){
     .addWidget(mapButtonSet)
     .setCollapsible(true);
 
-  var card = CardService.newCardBuilder().addSection(snoozeSection).addSection(recipientSection).addSection(mapSection)
+  var footer = buildPreviousAndRootButtonSet();
+
+  var card = CardService.newCardBuilder()
+      .addSection(snoozeSection)
+      .addSection(recipientSection)
+      .addSection(mapSection)
+      .setFixedFooter(footer);
   return card.build();
+}
+
+function getManangeCustomButtons(){
+  var action = CardService.newAction().setFunctionName('manageCustomButtonsCard');
+  var managecustombuttons = CardService.newTextButton()
+    .setText('Manage Custom Buttons')
+    .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+    .setOnClickAction(action);
+  return managecustombuttons;
 }
 
 function addNewRecipientGroup(e){
