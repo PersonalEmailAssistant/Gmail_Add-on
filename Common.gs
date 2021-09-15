@@ -284,8 +284,7 @@ function buildSearchCard_(opt_error) {
     var snoozeSection = CardService.newCardSection()
       .setHeader("Snooze Email")
       .addWidget(snoozeQuickButtons())
-      .addWidget(snoozeDatePicker())
-      .addWidget(snoozeTimePicker())
+      .addWidget(snoozeDateTimePicker())
       .addWidget(CardService.newButtonSet().addButton(snoozeButton))
       .addWidget(snoozeAddRecipients())
       .addWidget(emailSnoozeRecipientGroupsButtons())
@@ -348,8 +347,7 @@ function onGmailMessage(e){
   var snoozeSection = CardService.newCardSection()
     .setHeader("Snooze Email")
     .addWidget(snoozeQuickButtons())
-    .addWidget(snoozeDatePicker())
-    .addWidget(snoozeTimePicker())
+    .addWidget(snoozeDateTimePicker())
     .addWidget(CardService.newButtonSet().addButton(snoozeButton))
     .addWidget(snoozeAddRecipients())
     .addWidget(emailSnoozeRecipientGroupsButtons())
@@ -374,8 +372,6 @@ function onGmailMessage(e){
 function updateCard(e) {
 
   var selectedSnoozeTime = e.formInput.date_field.msSinceEpoch;
-  selectedSnoozeTime += (e.formInput.time_field.hours-8) * 3600000;
-  selectedSnoozeTime += e.formInput.time_field.minutes * 60000;
   snoozeUntil = new Date(selectedSnoozeTime);
 
   // Button Actions
@@ -399,8 +395,7 @@ function updateCard(e) {
   var section = CardService.newCardSection()
     .setHeader("Snooze Email")
     .addWidget(snoozeQuickButtons())
-    .addWidget(snoozeDatePicker())
-    .addWidget(snoozeTimePicker());
+    .addWidget(snoozeDateTimePicker());
 
   if (now.getTime() > snoozeUntil.getTime()) {
     section.addWidget(btnSet.addButton(invalidButton));
@@ -453,31 +448,16 @@ function snoozeQuickButtons() {
  * Callback for creating the Snooze Date Picker widget.
  * @return {CardService.Card} The Date Picker widget
  */
-function snoozeDatePicker() {
-
-  var snoozeDatePicker = CardService.newDatePicker()
+function snoozeDateTimePicker() {
+  var snoozeDateTimePicker = CardService.newDateTimePicker()
     .setTitle("Enter the date to snooze until.")
     .setFieldName("date_field")
-    .setValueInMsSinceEpoch(snoozeUntil.getTime()+(8*3600000))
+    .setValueInMsSinceEpoch(snoozeUntil.getTime())
+    //.setTimeZoneOffsetInMins(-5 * 60)
     .setOnChangeAction(CardService.newAction()
       .setFunctionName("updateCard"));
 
-  return snoozeDatePicker;
-}
-
-/**
- * Callback for creating the Snooze Time Picker widget.
- * @return {CardService.Card} The Time Picker widget
- */
-function snoozeTimePicker() {
-  var snoozeTimePicker = CardService.newTimePicker()
-    .setFieldName("time_field")
-    .setHours(snoozeUntil.getHours())
-    .setMinutes(snoozeUntil.getMinutes())
-    .setOnChangeAction(CardService.newAction()
-      .setFunctionName("updateCard"));
-
-  return snoozeTimePicker;
+  return snoozeDateTimePicker;
 }
 
 function snoozeAddRecipients(){
