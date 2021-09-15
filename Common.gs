@@ -32,7 +32,7 @@ function messageChooser(e) {
 function onGmailMessageSelected(event) {
   var scriptProperties = PropertiesService.getUserProperties();
   scriptProperties.setProperty("selectedrecipients", " ");
-  
+
   var card = buildSearchCard_();
   return [card];
 }
@@ -127,9 +127,9 @@ function buildSearchCard_(opt_error) {
       .setImageUrl('https://image.freepik.com/free-vector/hello-word-memphis-background_136321-401.jpg');
 
   var message = CardService.newTextParagraph()
-      .setText("Can't find the function you are looking for?" + 
+      .setText("Can't find the function you are looking for?" +
                 "Head to Calendar/Gmail to see more!")
-  
+
   var info = messageChooser();
 
   var submitButton = CardService.newTextButton()
@@ -144,6 +144,25 @@ function buildSearchCard_(opt_error) {
   var imageButton = CardService.newImageButton()
   .setIconUrl("https://static.wikia.nocookie.net/p__/images/9/95/Robby_the_Robot01.png/revision/latest/top-crop/width/360/height/360?cb=20201228181530&path-prefix=protagonist")
   .setOnClickAction(action2);
+
+  // Doodle Poll - Main menu selection
+  var doodlePoll = CardService.newAction()
+        .setFunctionName('doodlePoll');
+        //.setParameters({'id': id.toString()});
+
+
+  var doodlePollButton = CardService.newTextButton()
+    .setText('Doodle Poll')
+    .setOnClickAction(doodlePoll);
+
+  var doodlePollImageButton = CardService.newImageButton()
+    .setIconUrl("https://static.wikia.nocookie.net/p__/images/9/95/Robby_the_Robot01.png/revision/latest/top-crop/width/360/height/360?cb=20201228181530&path-prefix=protagonist")
+    .setOnClickAction(doodlePoll);
+
+  var buttonSetDoodlePoll = CardService.newButtonSet()
+    .addButton(doodlePollImageButton)
+    .addButton(doodlePollButton);
+
 
   var buttonSetMapLink = CardService.newButtonSet()
     .addButton(imageButton)
@@ -171,6 +190,7 @@ function buildSearchCard_(opt_error) {
   //.addWidget(buttonSet)
   .addWidget(buttonSetSnooze)
   .addWidget(buttonSetMapLink)
+  .addWidget(buttonSetDoodlePoll)
   .addWidget(message)
   .setCollapsible(true)
   .setNumUncollapsibleWidgets(3);
@@ -284,7 +304,8 @@ function buildSearchCard_(opt_error) {
     var snoozeSection = CardService.newCardSection()
       .setHeader("Snooze Email")
       .addWidget(snoozeQuickButtons())
-      .addWidget(snoozeDateTimePicker())
+      .addWidget(snoozeDatePicker())
+      .addWidget(snoozeTimePicker())
       .addWidget(CardService.newButtonSet().addButton(snoozeButton))
       .addWidget(snoozeAddRecipients())
       .addWidget(emailSnoozeRecipientGroupsButtons())
@@ -298,7 +319,7 @@ function buildSearchCard_(opt_error) {
 
     return card.build();
     //------------------
- 
+
   }
 
   /**
@@ -322,7 +343,7 @@ function buildSearchCard_(opt_error) {
         .setNavigation(nav)
         .build();
   }
-  
+
 //------------------------------------------------------------------------------------------------------------------------
 //-----------------------------------code below is 'Snooze Email' from Github Common.gs-----------------------------------
 var now = new Date();
@@ -347,13 +368,14 @@ function onGmailMessage(e){
   var snoozeSection = CardService.newCardSection()
     .setHeader("Snooze Email")
     .addWidget(snoozeQuickButtons())
-    .addWidget(snoozeDateTimePicker())
+    .addWidget(snoozeDatePicker())
+    .addWidget(snoozeTimePicker())
     .addWidget(CardService.newButtonSet().addButton(snoozeButton))
     .addWidget(snoozeAddRecipients())
     .addWidget(emailSnoozeRecipientGroupsButtons())
     .addWidget(CardService.newTextParagraph().setText("\n\n"))
     .addWidget(getManangeCustomButtons());
-  
+
   var footer = buildPreviousAndRootButtonSet();
 
   // Card which includes the Snooze components only
@@ -372,6 +394,8 @@ function onGmailMessage(e){
 function updateCard(e) {
 
   var selectedSnoozeTime = e.formInput.date_field.msSinceEpoch;
+  selectedSnoozeTime += (e.formInput.time_field.hours-8) * 3600000;
+  selectedSnoozeTime += e.formInput.time_field.minutes * 60000;
   snoozeUntil = new Date(selectedSnoozeTime);
 
   // Button Actions
@@ -395,7 +419,8 @@ function updateCard(e) {
   var section = CardService.newCardSection()
     .setHeader("Snooze Email")
     .addWidget(snoozeQuickButtons())
-    .addWidget(snoozeDateTimePicker());
+    .addWidget(snoozeDatePicker())
+    .addWidget(snoozeTimePicker());
 
   if (now.getTime() > snoozeUntil.getTime()) {
     section.addWidget(btnSet.addButton(invalidButton));
@@ -448,16 +473,31 @@ function snoozeQuickButtons() {
  * Callback for creating the Snooze Date Picker widget.
  * @return {CardService.Card} The Date Picker widget
  */
-function snoozeDateTimePicker() {
-  var snoozeDateTimePicker = CardService.newDateTimePicker()
+function snoozeDatePicker() {
+
+  var snoozeDatePicker = CardService.newDatePicker()
     .setTitle("Enter the date to snooze until.")
     .setFieldName("date_field")
-    .setValueInMsSinceEpoch(snoozeUntil.getTime())
-    //.setTimeZoneOffsetInMins(-5 * 60)
+    .setValueInMsSinceEpoch(snoozeUntil.getTime()+(8*3600000))
     .setOnChangeAction(CardService.newAction()
       .setFunctionName("updateCard"));
 
-  return snoozeDateTimePicker;
+  return snoozeDatePicker;
+}
+
+/**
+ * Callback for creating the Snooze Time Picker widget.
+ * @return {CardService.Card} The Time Picker widget
+ */
+function snoozeTimePicker() {
+  var snoozeTimePicker = CardService.newTimePicker()
+    .setFieldName("time_field")
+    .setHours(snoozeUntil.getHours())
+    .setMinutes(snoozeUntil.getMinutes())
+    .setOnChangeAction(CardService.newAction()
+      .setFunctionName("updateCard"));
+
+  return snoozeTimePicker;
 }
 
 function snoozeAddRecipients(){
@@ -470,4 +510,3 @@ function snoozeAddRecipients(){
     .setValue(selectedrecipients);
   return addrecipients;
 }
-

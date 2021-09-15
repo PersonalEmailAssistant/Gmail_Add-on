@@ -33,8 +33,13 @@ function checkPropertySelectedSnoozeRecipients(){
   }
 }
 
-
-
+function checkPropertyDoodlePoll(){
+  var scriptProperties = PropertiesService.getUserProperties();
+  if (scriptProperties.getProperty("dplocations")===null){
+    var defaultdplocations = [["To Be Confirmed","TBC"],["Other", "Other"],["Zoom","Zoom"],["Skype", "Skype"]]; // time in hours
+    scriptProperties.setProperty("dplocations", JSON.stringify(defaultdplocations));
+  }
+}
 
 function manageCustomButtonsCard(){
   var scriptProperties = PropertiesService.getUserProperties();
@@ -111,7 +116,7 @@ function manageCustomButtonsCard(){
     .addWidget(recipientgroupsubmit)
     .setCollapsible(true);
 
-  
+
   // map link buttons
   checkPropertymap();
   var mapsaved = JSON.parse(scriptProperties.getProperty("map"));
@@ -189,4 +194,3 @@ function removePropertiesServiceItem(e){
   scriptProperties.setProperty(e.parameters.name, JSON.stringify(newarray));
   return manageCustomButtonsCard();
 }
-
