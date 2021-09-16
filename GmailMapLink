@@ -164,8 +164,16 @@ function saveNewLocation(e){
   var scriptProperties = PropertiesService.getUserProperties(); // this should allow for long-term storage
   var savedlocation = JSON.parse(scriptProperties.getProperty("map"));
   var message = "";
+  var flag = 0;
   if (e.formInput.text3!=undefined) message = e.formInput.text3;
-  savedlocation.push([e.formInput.text1,e.formInput.text2, message])
+  savedlocation.forEach(function(value){
+    if(value[0] == e.formInput.text1){
+      flag = 1
+      value[1] = e.formInput.text2
+      value[2] = message;}
+  })
+  if(flag == 0) savedlocation.push([e.formInput.text1,e.formInput.text2, message])
+  
   console.log(savedlocation)
   scriptProperties.setProperty("map", JSON.stringify(savedlocation));
   scriptProperties.setProperty("mapselected", JSON.stringify([e.formInput.text1,e.formInput.text2, message]));
@@ -173,6 +181,7 @@ function saveNewLocation(e){
 }
 
 function deleteLocation(e){
+
   checkPropertymap();
   var scriptProperties = PropertiesService.getUserProperties(); // this should allow for long-term storage
   var savedlocation = JSON.parse(scriptProperties.getProperty("map"));
