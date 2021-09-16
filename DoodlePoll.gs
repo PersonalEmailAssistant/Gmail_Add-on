@@ -3,8 +3,8 @@ function doodlePoll(e) {
   var card = CardService.newCardBuilder()
     .addSection(generalInfoSection())
     .setFixedFooter(buildPreviousAndRootButtonSet());
-
-  return CardService.newNavigation().updateCard(card.build());
+  return card.build();
+//   return CardService.newNavigation().updateCard(card.build());
 }
 
 // -----------------------------------------------------------------------------------
