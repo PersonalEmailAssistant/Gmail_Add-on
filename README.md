@@ -5,6 +5,7 @@ Notes and Known Issues
 1.4-Tom (9/16/2021)
 - Doodle Poll suggestions now added
 - Doodle Poll footer now works properly
+- Snooze Button now shows without click on the drop down menu
 
 Known Issues
 
