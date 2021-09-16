@@ -22,7 +22,7 @@ function snoozeTimer(e){
   // move email out of inbox
   GmailApp.moveThreadToArchive(thread);
   GmailApp.refreshThread(thread);
-  return updateCard(e)
+  return gotoRootCard();
 }
 
 /**
@@ -65,12 +65,12 @@ function buttonSnoozeTimeChange(e, hours){
   console.log(hours);
   snoozeUntil = new Date(now.getTime()+hours*3600000);
   console.log(snoozeUntil);
-  snoozeTimer(e);
+  return snoozeTimer(e);
 }
 /**
  * Actions for the Snooze Quick Button widgets. Each calls the buttonSnoozeTimeChange
  * function, with the amount of hours
  */
-function quickSnoozeButtons(e){buttonSnoozeTimeChange(e, +e.parameters.hours);}
+function quickSnoozeButtons(e){return buttonSnoozeTimeChange(e, +e.parameters.hours);}
 
 
