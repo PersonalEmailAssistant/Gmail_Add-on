@@ -71,15 +71,23 @@ function onSearch(event) {
     var card = onGmailMessage(event)
     var nav = CardService.newNavigation().pushCard(card);
     return CardService.newActionResponseBuilder()
-      .setNotification(notification)
+      //.setNotification(notification)//debugging purpose, can be deleted later
       .setNavigation(nav)
       .build();
-  } else if (query == 'MAP LINK' || query == 'Map Link' || query == 'MapLink') {
+  } else if (query == 'MAP LINK' || query == 'Map Link' || query == 'MapLink' || query == 'maplink') {
     var notification = CardService.newNotification().setText("map link found.")
     var card = onGmailCompose(event)
     var nav = CardService.newNavigation().pushCard(card);
     return CardService.newActionResponseBuilder()
-      .setNotification(notification)
+      //.setNotification(notification)//debugging purpose, can be deleted later
+      .setNavigation(nav)
+      .build();
+  } else if (query == 'DOODLE POLL' || query == 'Doodle Poll' || query == 'DoodlePoll' || query == 'doodlepoll') {
+    var notification = CardService.newNotification().setText("map link found.")
+    var card = doodlePoll(event)
+    var nav = CardService.newNavigation().pushCard(card);
+    return CardService.newActionResponseBuilder()
+      //.setNotification(notification)//debugging purpose, can be deleted later
       .setNavigation(nav)
       .build();
   }
@@ -115,7 +123,8 @@ function buildSearchCard_(opt_error) {
   .setFieldName("query")
   .setSuggestions(CardService.newSuggestions()
     .addSuggestion('SNOOZE')
-    .addSuggestion('MAP LINK'))
+    .addSuggestion('MAP LINK')
+    .addSuggestion('DOODLE POLL'))
   .setHint("Name of functions")
   .setTitle("What can I do for you today?");
 
