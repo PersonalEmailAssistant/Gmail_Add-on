@@ -168,7 +168,7 @@ function addNewRecipientGroup(e){
   array.push([name, addresses]);
   console.log(array);
   scriptProperties.setProperty("recipientgroups", JSON.stringify(array));
-  return manageCustomButtonsCard();
+  return onGmailMessage(e);
 }
 
 function addNewQuickButton(e){
@@ -180,7 +180,7 @@ function addNewQuickButton(e){
   var buttonname = e.formInput.addquickbuttoninput + " Hours"
   quicksnoozebuttons.push([buttonname, ""+e.formInput.addquickbuttoninput]);
   scriptProperties.setProperty("quicksnooze", JSON.stringify(quicksnoozebuttons));
-  return manageCustomButtonsCard();
+  return onGmailMessage(e);
 }
 
 function removePropertiesServiceItem(e){
@@ -192,5 +192,5 @@ function removePropertiesServiceItem(e){
     if (value[0]!=item[0] && value[1]!=item[1]) newarray.push(value);});
 
   scriptProperties.setProperty(e.parameters.name, JSON.stringify(newarray));
-  return manageCustomButtonsCard();
+  return onGmailMessage(e);
 }
