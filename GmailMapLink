@@ -1,3 +1,5 @@
+
+  
 /**
  * Callback for rendering the card for the compose action dialog.
  * @param {Object} e The event object.
@@ -28,6 +30,8 @@
       .setFunctionName('onGmailInsertMap');
   var addlocation = CardService.newAction()
       .setFunctionName('saveNewLocation');
+  var deletelocation = CardService.newAction()
+      .setFunctionName('deleteLocation');
   var button = CardService.newTextButton()
       .setText('Insert map link')
       .setOnClickAction(action)
@@ -40,10 +44,15 @@
       .setText('Save Location')
       .setOnClickAction(addlocation)
       .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
+  var button3 = CardService.newTextButton()
+      .setText('Delete Location')
+      .setOnClickAction(deletelocation)
+      .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
   var buttonSet = CardService.newButtonSet()
       .addButton(button1)
       .addButton(button)
-      .addButton(button2);
+      .addButton(button2)
+      .addButton(button3);
   // Assemble the widgets and return the card.
   var section = CardService.newCardSection()
       .addWidget(input1)
@@ -160,5 +169,18 @@ function saveNewLocation(e){
   console.log(savedlocation)
   scriptProperties.setProperty("map", JSON.stringify(savedlocation));
   scriptProperties.setProperty("mapselected", JSON.stringify([e.formInput.text1,e.formInput.text2, message]));
+  return CardService.newNavigation().updateCard(onGmailCompose())
+}
+
+function deleteLocation(e){
+  checkPropertymap();
+  var scriptProperties = PropertiesService.getUserProperties(); // this should allow for long-term storage
+  var savedlocation = JSON.parse(scriptProperties.getProperty("map"));
+  var message = "";
+  if (e.formInput.text3!=undefined) message = e.formInput.text3;
+  savedlocation.push([e.formInput.text1,e.formInput.text2, message])
+  console.log(savedlocation)
+  scriptProperties.deleteProperty("map");
+  scriptProperties.deleteProperty("mapselected");
   return CardService.newNavigation().updateCard(onGmailCompose())
 }
