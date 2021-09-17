@@ -50,7 +50,8 @@ function schedulingSection(e) {
   var schedulingSection = CardService.newCardSection()
     .setHeader("Step 2 of 3: Scheduling Options")
     .addWidget(headerDP2())
-    .addWidget(schedulingButtons());
+    .addWidget(schedulingButtons())
+    .addWidget(nextButtonDP2());
 
   return schedulingSection;
 }
@@ -274,7 +275,6 @@ function textOption2DP(e) {
     .setHint("Add Option")
     .setOnChangeAction(CardService.newAction()
       .setFunctionName('checkTextOptions'));
-
   return textOption1DP;
 }
 */
@@ -437,7 +437,7 @@ function checkTextOptions(e) {
 function ontoSection3 (e) {
 
   var card = CardService.newCardBuilder()
-    .addSection(schedulingSection())
+    .addSection(pollSettingsSection())
     .setFixedFooter(buildPreviousAndRootButtonSet());
 
   return CardService.newNavigation().updateCard(card.build());
@@ -446,7 +446,7 @@ function ontoSection3 (e) {
 function ontoSection2 (e) {
 
   var card = CardService.newCardBuilder()
-    .addSection(pollSettingsSection())
+    .addSection(schedulingSection())
     .setFixedFooter(buildPreviousAndRootButtonSet());
 
   return CardService.newNavigation().updateCard(card.build());

@@ -6,10 +6,7 @@ var _ = LodashGS.load();
  * @return the different message to show to the user depend on the time.
  */
 function messageChooser(e) {
-  //perth:GMT+8; the code is now hard coded and limited to perth timezone:(
-  //to do: find out user's timezone through event 'e'. (i.e., e.userTimezone) or pop up setting for user
-  //potential problem: e remains NULL while user haven't choose email.
-  var hour = Number(Utilities.formatDate(new Date(), 'GMT+8', 'H'));
+  var hour = Number(Utilities.formatDate(new Date(), 'GMT+'+(e.userTimezone.offSet/3600000), 'H'));
   console.log(hour);
   var message;
   if (hour >= 6 && hour < 12) {
@@ -29,11 +26,11 @@ function messageChooser(e) {
 * @param {Object} event - current add-on event
 * @return {Card[]} Card(s) to display
 */
-function onGmailMessageSelected(event) {
+function onGmailMessageSelected(e) {
   var scriptProperties = PropertiesService.getUserProperties();
   scriptProperties.setProperty("selectedrecipients", " ");
 
-  var card = buildSearchCard_();
+  var card = buildSearchCard_(e);
   return [card];
 }
 
@@ -43,8 +40,8 @@ function onGmailMessageSelected(event) {
 * @param {Object} event - current add-on event
 * @return {Card[]} Card(s) to display
 */
-function onCalendarEventOpen(event) {
-  var card = buildSearchCard_("No functions found for current event.");
+function onCalendarEventOpen(e) {
+  var card = buildSearchCard_(e, "No functions found for current event.");
   return [card];
 }
 
@@ -101,11 +98,6 @@ function onSearch(event) {
 
 }
 
-
-function onTest1() {
-  console.log('hello');
-}
-
 /**
 * Builds the search interface for looking up people.
 *
@@ -113,7 +105,7 @@ function onTest1() {
 *    contextual search failed.)
 * @return {Card} Card to display
 */
-function buildSearchCard_(opt_error) {
+function buildSearchCard_(e, opt_error) {
   var banner = CardService.newImage()
   .setImageUrl('https://storage.googleapis.com/gweb-cloudblog-publish/original_images/Workforce_segmentation_1.png');
 
@@ -139,7 +131,7 @@ function buildSearchCard_(opt_error) {
       .setText("Can't find the function you are looking for?" +
                 "Head to Calendar/Gmail to see more!")
 
-  var info = messageChooser();
+  var info = messageChooser(e);
 
   var submitButton = CardService.newTextButton()
   .setText("Search")
@@ -482,7 +474,6 @@ function snoozeDateTimePicker() {
     .setTitle("Enter the date to snooze until.")
     .setFieldName("date_field")
     .setValueInMsSinceEpoch(snoozeUntil.getTime())
-    //.setTimeZoneOffsetInMins(-5 * 60)
     .setOnChangeAction(CardService.newAction()
       .setFunctionName("updateCard"));
 

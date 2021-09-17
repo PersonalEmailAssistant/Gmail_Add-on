@@ -13,3 +13,10 @@ Known Issues
 - The Map Link interface on sidebar is not behave correctly. (Some bottoms do not work: Insert map & Insert link)
 - In doodle poll, after input the title, click on next, the page will go from section 1 directly to section 3
 
+
+1.5-Lily (9/17/2021)
+- Timezones now change depending on the user
+- All three sections of the doodle poll are visible 
+
+Potential Issue?
+- Map link and doodle poll should only be visible when composing an email rather than viewing
