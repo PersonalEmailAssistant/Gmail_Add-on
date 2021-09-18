@@ -1,4 +1,3 @@
-// See https://github.com/contributorpw/lodashgs
 var _ = LodashGS.load();
 
 /**
@@ -21,6 +20,25 @@ function messageChooser(e) {
 }
 
 /**
+ * creates different messages during different time of a day
+ */
+function easterEgg(e) {
+  var info = messageChooser(e)
+  var message;
+  if (info == 'Good Morning') {
+    message = 'Have a good day:))';
+  } else if (info == 'Good Afternoon') {
+    message = 'Pleasant afternoon^_^';
+  } else if (info == 'Good Evening'){
+    message = 'It is been a long day. Have a good rest!';
+  }
+  var notification = CardService.newNotification().setText(message)
+  return CardService.newActionResponseBuilder()
+  .setNotification(notification)
+  .build();
+}
+
+/**
 * Renders the contextual interface for a Gmail message.
 *
 * @param {Object} event - current add-on event
@@ -36,7 +54,7 @@ function onGmailMessageSelected(e) {
 
 /**
 * Renders the contextual interface for a calendar event.
-*
+* This section is researved for furture dev(i.e., calendar related functions)
 * @param {Object} event - current add-on event
 * @return {Card[]} Card(s) to display
 */
@@ -61,35 +79,29 @@ function onSearch(event) {
   }
 
   var query =  event.formInputs.query[0];
-  var people = '';
-  // var people = queryPeople_(query);
-  if (query == 'SNOOZE' || query == 'Snooze') {
-    var notification = CardService.newNotification().setText("snooze found.")
+  var checking = '';//if no function found, checking enable the process of pushing no match found notification
+
+    if (query.replace(" ", "").localeCompare('snooze', undefined, {sensitivity: 'base' }) === 0) {
     var card = onGmailMessage(event)
     var nav = CardService.newNavigation().pushCard(card);
     return CardService.newActionResponseBuilder()
-      //.setNotification(notification)//debugging purpose, can be deleted later
       .setNavigation(nav)
       .build();
-  } else if (query == 'MAP LINK' || query == 'Map Link' || query == 'MapLink' || query == 'maplink') {
-    var notification = CardService.newNotification().setText("map link found.")
+  } else if (query.replace(" ", "").localeCompare('maplink', undefined, {sensitivity: 'base' }) === 0) {
     var card = onGmailCompose(event)
     var nav = CardService.newNavigation().pushCard(card);
     return CardService.newActionResponseBuilder()
-      //.setNotification(notification)//debugging purpose, can be deleted later
       .setNavigation(nav)
       .build();
-  } else if (query == 'DOODLE POLL' || query == 'Doodle Poll' || query == 'DoodlePoll' || query == 'doodlepoll') {
-    var notification = CardService.newNotification().setText("map link found.")
+  } else if (query.replace(" ", "").localeCompare('doodlepoll', undefined, {sensitivity: 'base' }) === 0) {
     var card = doodlePoll(event)
     var nav = CardService.newNavigation().pushCard(card);
     return CardService.newActionResponseBuilder()
-      //.setNotification(notification)//debugging purpose, can be deleted later
       .setNavigation(nav)
       .build();
   }
 
-  if (!people || people.length == 0) {
+  if (!checking || checking.length == 0) {
     var notification = CardService.newNotification().setText("No function found.");
     return CardService.newActionResponseBuilder()
     .setNotification(notification)
@@ -99,24 +111,20 @@ function onSearch(event) {
 }
 
 /**
-* Builds the search interface for looking up people.
+* Builds the search interface for looking up functions.
 *
 * @param {string} opt_error - Optional message to include (typically when
 *    contextual search failed.)
 * @return {Card} Card to display
 */
 function buildSearchCard_(e, opt_error) {
-  var banner = CardService.newImage()
-  .setImageUrl('https://storage.googleapis.com/gweb-cloudblog-publish/original_images/Workforce_segmentation_1.png');
-
-  var id = '1';
-
+  
   var searchField = CardService.newTextInput()
   .setFieldName("query")
   .setSuggestions(CardService.newSuggestions()
-    .addSuggestion('SNOOZE')
-    .addSuggestion('MAP LINK')
-    .addSuggestion('DOODLE POLL'))
+    .addSuggestion('Snooze')
+    .addSuggestion('Map link')
+    .addSuggestion('Doodle poll'))
   .setHint("Name of functions")
   .setTitle("What can I do for you today?");
 
@@ -124,7 +132,7 @@ function buildSearchCard_(e, opt_error) {
   .setFunctionName("onSearch")
   .setLoadIndicator(CardService.LoadIndicator.SPINNER);
 
-  var banner1 = CardService.newImage()
+  var banner = CardService.newImage()
       .setImageUrl('https://image.freepik.com/free-vector/hello-word-memphis-background_136321-401.jpg');
 
   var message = CardService.newTextParagraph()
@@ -138,30 +146,24 @@ function buildSearchCard_(e, opt_error) {
   .setOnClickAction(onSubmitAction)
   .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
 
-  var action2 = CardService.newAction()
-    .setFunctionName('onTest1')
-    .setParameters({});
-
+//------------image infront of each button------------------------------------------------
+  var action = CardService.newAction()
+    .setFunctionName('easterEgg');
   var imageButton = CardService.newImageButton()
   .setIconUrl("https://static.wikia.nocookie.net/p__/images/9/95/Robby_the_Robot01.png/revision/latest/top-crop/width/360/height/360?cb=20201228181530&path-prefix=protagonist")
-  .setOnClickAction(action2);
-
+  .setOnClickAction(action);
+//---------------------------------------------------------------------------------------
+  
   // Doodle Poll - Main menu selection
   var doodlePoll = CardService.newAction()
         .setFunctionName('doodlePoll');
-        //.setParameters({'id': id.toString()});
-
 
   var doodlePollButton = CardService.newTextButton()
     .setText('Doodle Poll')
     .setOnClickAction(doodlePoll);
 
-  var doodlePollImageButton = CardService.newImageButton()
-    .setIconUrl("https://static.wikia.nocookie.net/p__/images/9/95/Robby_the_Robot01.png/revision/latest/top-crop/width/360/height/360?cb=20201228181530&path-prefix=protagonist")
-    .setOnClickAction(doodlePoll);
-
   var buttonSetDoodlePoll = CardService.newButtonSet()
-    .addButton(doodlePollImageButton)
+    .addButton(imageButton)
     .addButton(doodlePollButton);
 
 
@@ -172,23 +174,24 @@ function buildSearchCard_(e, opt_error) {
         .setText('Map Link')
         .setOnClickAction(
           CardService.newAction()
-            .setFunctionName('onGmailCompose')
-            .setParameters({}))
+            .setFunctionName('onGmailCompose'))
     );
 
-  var buttonSetSnooze = CardService.newButtonSet();
-    // for(var i = 1; i <= 3; i++) {
-      var i = 1;
-      buttonSetSnooze.addButton(imageButton)
-      buttonSetSnooze.addButton(createToCardButton(i));
-    // }
+  var buttonSetSnooze = CardService.newButtonSet()
+      .addButton(imageButton)
+      .addButton(
+        CardService.newTextButton()
+          .setText('Snooze')
+          .setOnClickAction(
+            CardService.newAction()
+              .setFunctionName('onGmailMessage'))
+      );
 
 
   var section = CardService.newCardSection()
-  .addWidget(banner1)
+  .addWidget(banner)
   .addWidget(searchField)
   .addWidget(submitButton)
-  //.addWidget(buttonSet)
   .addWidget(buttonSetSnooze)
   .addWidget(buttonSetMapLink)
   .addWidget(buttonSetDoodlePoll)
@@ -210,46 +213,11 @@ function buildSearchCard_(e, opt_error) {
       .setTitle('Welcome to Robby')
       .setSubtitle(info + ' :)')
   )
-  //.addSection(justForLook)
+
   .addSection(section)
   .setFixedFooter(footer)
   .build();
 }
-
-/**
-   *  Create a button that navigates to the specified child card.
-   *  @return {TextButton}
-   */
-  function createToCardButton(id) {
-    var text = '';
-    switch (id) {
-      case 1:
-        text = 'snooze';
-        var action = CardService.newAction()
-            .setFunctionName('onGmailMessage')
-            // .setParameters({'id': id.toString()});
-        var button = CardService.newTextButton()
-            .setText(text)
-            .setOnClickAction(action);
-        return button;
-        break;
-
-      case 2:
-        text = 'map link';
-        break;
-
-      case 3:
-        text = 'doodle poll'
-        break;
-    }
-    var action = CardService.newAction()
-        .setFunctionName('gotoChildCard')
-        .setParameters({'id': id.toString()});
-    var button = CardService.newTextButton()
-        .setText(text)
-        .setOnClickAction(action);
-    return button;
-  }
 
   /**
    *  Create a ButtonSet with two buttons: one that backtracks to the
@@ -262,64 +230,10 @@ function buildSearchCard_(e, opt_error) {
             .setText('Back')
             .setOnClickAction(CardService.newAction()
             .setFunctionName('gotoPreviousCard')))
-            //.setTextButtonStyle(CardService.TextButtonStyle.FILLED))
         .setSecondaryButton(CardService.newTextButton()
             .setText('Home')
             .setOnClickAction(CardService.newAction()
             .setFunctionName('gotoRootCard')));
-            //.setTextButtonStyle(CardService.TextButtonStyle.FILLED));
-  }
-
-  /**
-   *  Create a child card, with buttons leading to each of the other
-   *  child cards, and then navigate to it.
-   *  @param {Object} e object containing the id of the card to build.
-   *  @return {ActionResponse}
-   */
-  function gotoChildCard(e) {
-    if (e == null || e.messageMetadata.messageId == null) {
-      return;
-    }
-    var id = parseInt(e.parameters.id);  // Current card ID
-    var id2 = (id==3) ? 1 : id + 1;      // 2nd card ID
-    var id3 = (id==1) ? 3 : id - 1;      // 3rd card ID
-    var title = 'CARD ' + id;
-
-    //------------------
-    var action = CardService.newAction()
-      .setFunctionName('snoozeTimer')
-      .setParameters({id: e.messageMetadata.messageId});
-    var snoozeButton = CardService.newTextButton()
-      .setText('Snooze Email')
-      .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
-      .setOnClickAction(action);
-
-    // Create buttons that go to the other two child cards.
-    var buttonSet = CardService.newButtonSet()
-      .addButton(createToCardButton(id2))
-      .addButton(createToCardButton(id3));
-
-    var footer = buildPreviousAndRootButtonSet();
-
-    // Card Section for Snooze components, each add widget calls a function that creates the widget
-    var snoozeSection = CardService.newCardSection()
-      .setHeader("Snooze Email")
-      .addWidget(snoozeQuickButtons())
-      .addWidget(snoozeDateTimePicker())
-      .addWidget(CardService.newButtonSet().addButton(snoozeButton))
-      .addWidget(snoozeAddRecipients())
-      .addWidget(emailSnoozeRecipientGroupsButtons())
-      .addWidget(buttonSet);
-
-    // Card which includes the Snooze components only
-    var card = CardService.newCardBuilder()
-      .setName('snooze')
-      .addSection(snoozeSection)
-      .setFixedFooter(footer);
-
-    return card.build();
-    //------------------
- 
   }
 
   /**
@@ -344,8 +258,6 @@ function buildSearchCard_(e, opt_error) {
         .build();
   }
   
-//------------------------------------------------------------------------------------------------------------------------
-//-----------------------------------code below is 'Snooze Email' from Github Common.gs-----------------------------------
 var now = new Date();
 var snoozeUntil = new Date(now.getTime()+(2 * 60 * 60 * 1000)); // set default snooze time as now + 2 hours
 GmailApp.createLabel("Snoozed");
