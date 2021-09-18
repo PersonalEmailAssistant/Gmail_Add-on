@@ -20,3 +20,10 @@ Known Issues
 
 Potential Issue?
 - Map link and doodle poll should only be visible when composing an email rather than viewing
+
+1.6-Tom (9/19/2021)
+- Cleaning up all the UI code before send them to client(i.e., include but not limit to delete unnecessary code, comments, redundant logic; bug fixes; and improvements)
+- redirect 'feedback' link to this page
+
+Potential Issue
+- Map link and doodle poll should only be visible when composing an email rather than viewing
