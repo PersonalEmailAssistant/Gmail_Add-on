@@ -45,10 +45,10 @@
       },
       "universalActions": [{
         "label": "Feedback",
-        "openLink": "https://github.com/googleworkspace/add-ons-samples/issues"
+        "openLink": "https://github.com/PersonalEmailAssistant/Gmail_Add-on"
       }],
       "openLinkUrlPrefixes": [
-        "https://github.com/googleworkspace/add-ons-samples/"
+        "https://github.com/PersonalEmailAssistant/Gmail_Add-on"
       ]
     },
     "gmail": {
