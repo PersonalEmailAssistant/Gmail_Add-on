@@ -62,7 +62,7 @@
         "selectActions": [
           {
             "text": "Insert map",
-            "runFunction": "onGmailCompose"
+            "runFunction": "onGmailMessageSelected"
           }
         ]
       }

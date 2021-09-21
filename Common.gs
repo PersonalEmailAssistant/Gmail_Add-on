@@ -189,10 +189,10 @@ function buildSearchCard_(e, opt_error) {
 
 
   var section = CardService.newCardSection()
-  .addWidget(banner)
+  //.addWidget(banner)
   .addWidget(searchField)
   .addWidget(submitButton)
-  .addWidget(buttonSetSnooze)
+  //.addWidget(buttonSetSnooze)
   .addWidget(buttonSetMapLink)
   .addWidget(buttonSetDoodlePoll)
   .addWidget(message)
