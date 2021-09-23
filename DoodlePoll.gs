@@ -1,5 +1,9 @@
 // Begin by building the root card with 1st section 'General Info'.
 function doodlePoll(e) {
+  var scriptProperties = PropertiesService.getUserProperties();
+  scriptProperties.setProperty("dpdateoptions", JSON.stringify([]));
+  scriptProperties.setProperty("dptextoptions", JSON.stringify([]));
+
   var card = CardService.newCardBuilder()
     .addSection(generalInfoSection())
     .setFixedFooter(buildPreviousAndRootButtonSet());
@@ -18,12 +22,10 @@ var otherLocationDPvar;
 
 // Section 2
 var meetingLengthDPvar;
-var dateOptions = [];
-var textOptions = [];
+var textOptions;
+
 /*
-if (dateOptions === null) {
-  dateOptions = [];
-}
+//if (dateOptions === null) dateOptions = [];
 if (textOptions === null) {
   textOptions = [];
 }
@@ -88,31 +90,24 @@ function pollSettingsSection(e) {
 // ------------------------------- DOODLE POLL WIDGETS -------------------------------
 // -----------------------------------------------------------------------------------
 
-
 // ------------------------------------ HEADERS --------------------------------------
 
 function headerDP1(e) {
-
   var decoratedText = CardService.newDecoratedText()
     .setText("What's the Occasion?")
     .setText("Title Required to Continue.");
-
   return decoratedText;
 }
 
 function headerDP2(e) {
-
   var decoratedText = CardService.newDecoratedText()
     .setText("What are the Options?");
-
   return decoratedText;
 }
 
 function headerDP3(e) {
-
   var decoratedText = CardService.newDecoratedText()
     .setText("Poll Settings");
-
   return decoratedText;
 }
 
@@ -299,25 +294,21 @@ function formatDatesDP(e) {
   return formattedDates;
 }
 
-function showDateOptionDP(e) {
-
-  var showDateOption = CardService.newDecoratedText()
-    .setTopLabel("Selected Options")
-    .setText(dateOptions)
-    .setWrapText(true);
-
-  return showDateOption;
-}
-
 function textSelectorDP(e) {
   var textSelector = CardService.newTextInput()
-    .setTitle("Option")
+    .setTitle("New Option")
     .setFieldName("textSelectorKey")
     .setValue("");
     //.setOnChangeAction(CardService.newAction()
       //.setFunctionName('changeTextOptions'));
 
   return textSelector;
+}
+
+function textListDP(e) {
+  var textSelector = CardService.newTextInput()
+    .setFieldName("textSelectorKey")
+    .setValue("");
 }
 
 function addTextOptionButtonDP(e) {
@@ -331,13 +322,46 @@ function addTextOptionButtonDP(e) {
   return CardService.newButtonSet().addButton(addTextOptionButton);
 }
 
-function showTextOptionDP(e) {
+function showDateOptionDP(e) {
 
-  var showTextOption = CardService.newDecoratedText()
-    .setText(textOptions)
+  var formattedText = ''
+
+  checkPropertyDPDateOptions();
+  var scriptProperties = PropertiesService.getUserProperties();
+  textoptions = JSON.parse(scriptProperties.getProperty("dpdateoptions"));
+
+  textoptions.forEach(function(value) {
+    time = new Date(value.msSinceEpoch);
+    console.log(time);
+    //https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
+    timevalue = Utilities.formatDate(time, 'GMT+8', "EEE, MMM dd, hh:mm a");
+    formattedText = formattedText + timevalue + '\n';
+  })
+
+  var showDateOption = CardService.newDecoratedText()
     .setTopLabel("Selected Options")
+    .setText(formattedText)
     .setWrapText(true);
 
+  return showDateOption;
+}
+
+
+function showTextOptionDP(e) {
+
+  var formattedText = ''
+
+  checkPropertyDPTextOptions();
+  var scriptProperties = PropertiesService.getUserProperties();
+  textoptions = JSON.parse(scriptProperties.getProperty("dptextoptions"));
+  textoptions.forEach(function(value) {
+    formattedText = formattedText + value + '\n';
+  })
+
+  var showTextOption = CardService.newDecoratedText()
+    .setTopLabel("Selected Options")
+    .setText(formattedText)
+    .setWrapText(true);
   return showTextOption;
 }
 
@@ -451,6 +475,7 @@ function dateScheduleUpdateDP(e) {
 // Function runs on any updates to the Text Scheduling section
 function textScheduleUpdateDP(e) {
   dateUsedDP = false;
+
   var textScheduleSection = CardService.newCardSection()
     .addWidget(meetingLengthDP())
     .addWidget(textSelectorDP())
@@ -471,15 +496,20 @@ function handleMeetingLengthDP(e) {
 }
 
 function addDateOption(e) {
-  dateOptions.push(e.formInput.dateSelectorKey);
-  console.log(dateOptions);
+  checkPropertyDPDateOptions();
+  var scriptProperties = PropertiesService.getUserProperties();
+  dateoptions = JSON.parse(scriptProperties.getProperty("dpdateoptions"));
+  dateoptions.push(e.formInput.dateSelectorKey);
+  scriptProperties.setProperty("dpdateoptions", JSON.stringify(dateoptions));
   return dateScheduleUpdateDP();
 }
 
 function addTextOption(e) {
-  textOptions.push(e.formInput.textSelectorKey);
-  //textOptions = textOptions.e.formInput.textSelectorKey;
-  console.log(textOptions);
+  checkPropertyDPTextOptions();
+  var scriptProperties = PropertiesService.getUserProperties();
+  textoptions = JSON.parse(scriptProperties.getProperty("dptextoptions"));
+  textoptions.push(e.formInput.textSelectorKey);
+  scriptProperties.setProperty("dptextoptions", JSON.stringify(textoptions));
   return textScheduleUpdateDP();
 }
 
@@ -555,4 +585,13 @@ function completePoll (e) {
   else {
     form.setCollectEmail(true);
   }
+
+  var section = CardService.newCardSection()
+    .setHeader("Meeting poll has been created successfully.")
+
+  var card = CardService.newCardBuilder()
+    .addSection(section())
+    .setFixedFooter(buildPreviousAndRootButtonSet());
+
+  return CardService.newNavigation().updateCard(card.build());
 }

@@ -44,7 +44,7 @@ function checkPropertyDPLocation(){
 function checkPropertyDPTextOptions(){
   var scriptProperties = PropertiesService.getUserProperties();
   if (scriptProperties.getProperty("dptextoptions")===null){
-    var defaultdptextoptions = [[""],[""]]; // empty string values
+    var defaultdptextoptions = [];
     scriptProperties.setProperty("dptextoptions", JSON.stringify(defaultdptextoptions));
   }
 }
@@ -52,11 +52,10 @@ function checkPropertyDPTextOptions(){
 function checkPropertyDPDateOptions(){
   var scriptProperties = PropertiesService.getUserProperties();
   if (scriptProperties.getProperty("dpdateoptions")===null){
-    var defaultdpdateoptions = [[""],[""]]; // time in hours
-    scriptProperties.setProperty("dplocations", JSON.stringify(defaultdplocations));
+    var defaultdpdateoptions = [];
+    scriptProperties.setProperty("dpdateoptions", JSON.stringify(defaultdpdateoptions));
   }
 }
-
 
 function manageCustomButtonsCard(){
   var scriptProperties = PropertiesService.getUserProperties();
