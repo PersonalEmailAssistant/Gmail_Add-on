@@ -180,6 +180,9 @@ function saveNewLocation(e){
   return CardService.newNavigation().updateCard(onGmailCompose())
 }
 
+//to do:
+//this function needs boundary check!!!
+//click on deleteLocation twice result in unrecoverable run time error while rendering the mapLink page :(((((((((
 function deleteLocation(e){
 
   checkPropertymap();
