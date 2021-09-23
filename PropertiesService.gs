@@ -33,13 +33,30 @@ function checkPropertySelectedSnoozeRecipients(){
   }
 }
 
-function checkPropertyDoodlePoll(){
+function checkPropertyDPLocation(){
   var scriptProperties = PropertiesService.getUserProperties();
   if (scriptProperties.getProperty("dplocations")===null){
-    var defaultdplocations = [["To Be Confirmed","TBC"],["Other", "Other"],["Zoom","Zoom"],["Skype", "Skype"]]; // time in hours
+    var defaultdplocations = [["To Be Confirmed","TBC"],["Other", "Other"],["Zoom","Zoom"],["Teams", "Teams"]];
     scriptProperties.setProperty("dplocations", JSON.stringify(defaultdplocations));
   }
 }
+
+function checkPropertyDPTextOptions(){
+  var scriptProperties = PropertiesService.getUserProperties();
+  if (scriptProperties.getProperty("dptextoptions")===null){
+    var defaultdptextoptions = [[""],[""]]; // empty string values
+    scriptProperties.setProperty("dptextoptions", JSON.stringify(defaultdptextoptions));
+  }
+}
+
+function checkPropertyDPDateOptions(){
+  var scriptProperties = PropertiesService.getUserProperties();
+  if (scriptProperties.getProperty("dpdateoptions")===null){
+    var defaultdpdateoptions = [[""],[""]]; // time in hours
+    scriptProperties.setProperty("dplocations", JSON.stringify(defaultdplocations));
+  }
+}
+
 
 function manageCustomButtonsCard(){
   var scriptProperties = PropertiesService.getUserProperties();
@@ -138,12 +155,51 @@ function manageCustomButtonsCard(){
     .addWidget(mapButtonSet)
     .setCollapsible(true);
 
+
+//// doodle poll buttons
+  checkPropertyDPLocation();
+  var doodlepolllocations = JSON.parse(scriptProperties.getProperty("dplocations"));
+  var doodlepollButtonSet = CardService.newButtonSet();
+
+  doodlepolllocations.forEach(function(value) {
+    if (value[0] != "Other" && value[0] != "To Be Confirmed") {
+      var removeaction = CardService.newAction()
+      .setFunctionName('removePropertiesServiceItem')
+      .setParameters({name:"dplocations", item:JSON.stringify(value)});
+      var button = CardService.newTextButton()
+        .setText(value[0])
+        .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+        .setOnClickAction(removeaction);
+      doodlepollButtonSet.addButton(button);
+    }
+  });
+  var info1 = CardService.newTextParagraph().setText("Click to remove saved locations.");
+
+  var action = CardService.newAction()
+    .setFunctionName("addQuickLocationButton");
+  var doodlepollinput = CardService.newTextInput()
+    .setFieldName("addQuickLocationInput")
+    .setTitle("Enter new quick location");
+  var doodlepollsubmit = CardService.newTextButton()
+    .setText("Add")
+    .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+    .setOnClickAction(action);
+
+  var doodlepollSection = CardService.newCardSection()
+    .setHeader("Doodle Poll Quick Locations")
+    .addWidget(info1)
+    .addWidget(doodlepollButtonSet)
+    .addWidget(doodlepollinput)
+    .addWidget(doodlepollsubmit)
+    .setCollapsible(true);
+
   var footer = buildPreviousAndRootButtonSet();
 
   var card = CardService.newCardBuilder()
       .addSection(snoozeSection)
       .addSection(recipientSection)
       .addSection(mapSection)
+      .addSection(doodlepollSection)
       .setFixedFooter(footer);
   return card.build();
 }
@@ -152,7 +208,7 @@ function getManangeCustomButtons(){
   var action = CardService.newAction().setFunctionName('manageCustomButtonsCard');
   var managecustombuttons = CardService.newTextButton()
     .setText('Manage Custom Buttons')
-    .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+    .setTextButtonStyle(CardService.TextButtonStyle.TEXT)
     .setOnClickAction(action);
   return managecustombuttons;
 }
@@ -183,6 +239,19 @@ function addNewQuickButton(e){
   return onGmailMessage(e);
 }
 
+function addQuickLocationButton(e){
+  console.log(e.formInput.addQuickLocationInput);
+  if (e.formInput.addQuickLocationInput == undefined) return;
+  checkPropertyDPLocation();
+  var scriptProperties = PropertiesService.getUserProperties();
+  var quickLocationButtons = JSON.parse(scriptProperties.getProperty("dplocations"));
+  var buttonname = e.formInput.addQuickLocationInput
+  quickLocationButtons.push([buttonname, ""+e.formInput.addQuickLocationInput]);
+  scriptProperties.setProperty("dplocations", JSON.stringify(quickLocationButtons));
+  return manageCustomButtonsCard(e);
+}
+
+
 function removePropertiesServiceItem(e){
   var item = JSON.parse(e.parameters.item);
   var scriptProperties = PropertiesService.getUserProperties();
@@ -192,5 +261,5 @@ function removePropertiesServiceItem(e){
     if (value[0]!=item[0] && value[1]!=item[1]) newarray.push(value);});
 
   scriptProperties.setProperty(e.parameters.name, JSON.stringify(newarray));
-  return onGmailMessage(e);
+  return manageCustomButtonsCard(e);
 }

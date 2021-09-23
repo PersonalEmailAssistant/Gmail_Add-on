@@ -33,7 +33,7 @@
   "runtimeVersion": "V8",
   "addOns": {
     "common": {
-      "name": "Robby Testing V1",
+      "name": "Robbie Testing V1",
       "logoUrl": "https://static.wikia.nocookie.net/p__/images/9/95/Robby_the_Robot01.png/revision/latest/top-crop/width/360/height/360?cb=20201228181530&path-prefix=protagonist",
       "useLocaleFromApp": true,
       "layoutProperties": {
