@@ -57,13 +57,13 @@
       "contextualTriggers": [{
         "unconditional": {
         },
-        "onTriggerFunction": "onGmailMessage"
+        "onTriggerFunction": "onGmailMessageSelected"
       }],
       "composeTrigger": {
         "selectActions": [
           {
             "text": "Insert map",
-            "runFunction": "onGmailMessageSelected"
+            "runFunction": "onGmailCompose"
           }
         ]
       }
