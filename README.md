@@ -27,3 +27,8 @@ Potential Issue?
 
 Potential Issue
 - Map link and doodle poll should only be visible when composing an email rather than viewing
+
+1.7-Tom (9/24/2021)
+- bug fixes on the map link(allow adding null positon into propertiesService, which crashes the add-on)
+- now map link have two seperate interface, one on composing section, the other is sidebar section.
+- Combined with the other newest doodle poll changes
