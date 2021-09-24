@@ -181,8 +181,8 @@ function saveNewLocation(e){
 }
 
 //to do:
-//this function needs boundary check!!!
-//click on deleteLocation twice result in unrecoverable run time error while rendering the mapLink page :(((((((((
+//this function needs boundary check!
+//click on deleteLocation twice result in run time error while rendering the mapLink page :(((((((((
 function deleteLocation(e){
 
   checkPropertymap();
