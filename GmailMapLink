@@ -163,6 +163,7 @@ function saveNewLocation(e){
   checkPropertymap();
   var scriptProperties = PropertiesService.getUserProperties(); // this should allow for long-term storage
   var savedlocation = JSON.parse(scriptProperties.getProperty("map"));
+  if(savedlocation[0] == null || savedlocation[1] == null || e.formInput.text1 == null || e.formInput.text2 == null){return;} 
   var message = "";
   var flag = 0;
   if (e.formInput.text3!=undefined) message = e.formInput.text3;
@@ -180,9 +181,7 @@ function saveNewLocation(e){
   return CardService.newNavigation().updateCard(onGmailCompose())
 }
 
-//to do:
-//this function needs boundary check!
-//click on deleteLocation twice result in run time error while rendering the mapLink page :(((((((((
+
 function deleteLocation(e){
 
   checkPropertymap();
