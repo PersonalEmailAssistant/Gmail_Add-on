@@ -88,7 +88,7 @@ function onSearch(event) {
       .setNavigation(nav)
       .build();
   } else if (query.replace(" ", "").localeCompare('maplink', undefined, {sensitivity: 'base' }) === 0) {
-    var card = onGmailCompose(event)
+    var card = onGmailSideBarML(event)
     var nav = CardService.newNavigation().pushCard(card);
     return CardService.newActionResponseBuilder()
       .setNavigation(nav)
@@ -174,7 +174,7 @@ function buildSearchCard_(e, opt_error) {
         .setText('Map Link')
         .setOnClickAction(
           CardService.newAction()
-            .setFunctionName('onGmailCompose'))
+            .setFunctionName('onGmailSideBarML'))
     );
 
   var buttonSetSnooze = CardService.newButtonSet()
@@ -189,15 +189,15 @@ function buildSearchCard_(e, opt_error) {
 
 
   var section = CardService.newCardSection()
-  //.addWidget(banner)
+  .addWidget(banner)
   .addWidget(searchField)
   .addWidget(submitButton)
-  //.addWidget(buttonSetSnooze)
+  .addWidget(buttonSetSnooze)
   .addWidget(buttonSetMapLink)
   .addWidget(buttonSetDoodlePoll)
   .addWidget(message)
   .setCollapsible(true)
-  .setNumUncollapsibleWidgets(4);
+  .setNumUncollapsibleWidgets(5);
 
   if (opt_error) {
     var message = CardService.newTextParagraph()
@@ -210,7 +210,7 @@ function buildSearchCard_(e, opt_error) {
   return CardService.newCardBuilder()
   .setHeader(
     CardService.newCardHeader()
-      .setTitle('Welcome to Robby')
+      .setTitle('Welcome to Robbie')
       .setSubtitle(info + ' :)')
   )
 
