@@ -57,6 +57,24 @@ function checkPropertyDPDateOptions(){
   }
 }
 
+//--------------section for checking whether user is using the sidebar or composing section------------
+  function onSideBar() {
+    var isOnSideBar = true;
+    scriptProperties.setProperty("isOnSideBar", JSON.stringify(isOnSideBar));
+  }
+
+  function onComposing() {
+    var isOnSideBar = false;
+    scriptProperties.setProperty("isOnSideBar", JSON.stringify(isOnSideBar));
+  }
+
+  function checkSideBarOrComposing() {
+    var isOnSideBar = JSON.parse(scriptProperties.getProperty("isOnSideBar"));
+    console.log(isOnSideBar);
+    return isOnSideBar;
+  }
+//--------------------------------------------------------------------------------------------------------
+
 function manageCustomButtonsCard(){
   var scriptProperties = PropertiesService.getUserProperties();
 
