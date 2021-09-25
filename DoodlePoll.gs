@@ -584,7 +584,10 @@ function completePoll (e) {
   else {
     form.setCollectEmail(true);
   }
+
+
   console.log(form.getPublishedUrl())
+  ScriptApp.newTrigger("onFormResponse").forForm(form).onFormSubmit().create();
 
   var section = CardService.newCardSection()
     .setHeader("Meeting poll has been created successfully.")
@@ -593,5 +596,32 @@ function completePoll (e) {
     .addSection(section)
     .setFixedFooter(buildPreviousAndRootButtonSet());
 
-  return CardService.newNavigation().updateCard(card.build()); //this line causes an error for me
+  //return CardService.newNavigation().updateCard(card.build()); //this line causes an error for me
+}
+
+function onFormResponse(e){
+  console.log(e)
+  console.log(e.response.getItemResponses()[0])
+  // Get the response that was submitted.
+  var formResponse = e.response;
+
+  // Get the items (i.e., responses to various questions)
+  // that were submitted.
+  var itemResponses = formResponse.getItemResponses();
+
+  // Create a variable emailBody to store the body
+  // of the email notification to be sent.
+  var emailBody = "New form response:\n\n";
+
+  // Put together the email body by appending all the
+  // questions & responses to the variable emailBody.
+  itemResponses.forEach(function(itemResponse) {
+    var title = itemResponse.getItem().getTitle();
+    var response = itemResponse.getResponse();
+    emailBody += title + "\n" + response + "\n\n";
+  });
+
+  // Send the email notification using the
+  // sendEmail() function.
+  MailApp.sendEmail(Session.getActiveUser().getEmail(), "New form response", emailBody);
 }
