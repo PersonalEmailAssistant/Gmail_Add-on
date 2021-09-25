@@ -284,6 +284,9 @@ function addDateOptionButtonDP(e) {
 }
 
 function formatDatesDP(e) {
+  checkPropertyDPDateOptions();
+  var scriptProperties = PropertiesService.getUserProperties();
+  dateOptions = JSON.parse(scriptProperties.getProperty("dpdateoptions"));
 
   var formattedDates = [];
   var i = 0;
@@ -332,9 +335,8 @@ function showDateOptionDP(e) {
 
   textoptions.forEach(function(value) {
     time = new Date(value.msSinceEpoch);
-    console.log(time);
     //https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
-    timevalue = Utilities.formatDate(time, 'GMT+8', "EEE, MMM dd, hh:mm a");
+    timevalue = Utilities.formatDate(time, userTimeZone, "EEE, MMM dd, hh:mm a");
     formattedText = formattedText + timevalue + '\n';
   })
 
@@ -536,7 +538,6 @@ function ontoSection3 (e) {
 }
 
 function completePoll (e) {
-
   console.log(titleDPvar);
 
   // Title / Description
@@ -585,13 +586,14 @@ function completePoll (e) {
   else {
     form.setCollectEmail(true);
   }
+  console.log(form.getPublishedUrl())
 
   var section = CardService.newCardSection()
     .setHeader("Meeting poll has been created successfully.")
 
   var card = CardService.newCardBuilder()
-    .addSection(section())
+    .addSection(section)
     .setFixedFooter(buildPreviousAndRootButtonSet());
 
-  return CardService.newNavigation().updateCard(card.build());
+  return CardService.newNavigation().updateCard(card.build()); //this line causes an error for me
 }

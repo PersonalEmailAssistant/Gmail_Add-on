@@ -23,6 +23,7 @@
     "https://www.googleapis.com/auth/script.locale",
     "https://www.googleapis.com/auth/script.send_mail",
     "https://www.googleapis.com/auth/script.scriptapp",
+    "https://www.googleapis.com/auth/calendar",
     "https://www.googleapis.com/auth/calendar.addons.execute",
     "https://www.googleapis.com/auth/calendar.addons.current.event.read",
     "https://www.googleapis.com/auth/drive.addons.metadata.readonly",
@@ -34,7 +35,7 @@
   "runtimeVersion": "V8",
   "addOns": {
     "common": {
-      "name": "Robbie Testing V1",
+      "name": "Robby",
       "logoUrl": "https://static.wikia.nocookie.net/p__/images/9/95/Robby_the_Robot01.png/revision/latest/top-crop/width/360/height/360?cb=20201228181530&path-prefix=protagonist",
       "useLocaleFromApp": true,
       "layoutProperties": {

@@ -5,7 +5,7 @@ var _ = LodashGS.load();
  * @return the different message to show to the user depend on the time.
  */
 function messageChooser(e) {
-  var hour = Number(Utilities.formatDate(new Date(), 'GMT+'+(e.userTimezone.offSet/3600000), 'H'));
+  var hour = Number(Utilities.formatDate(new Date(), userTimeZone, 'H'));
   console.log(hour);
   var message;
   if (hour >= 6 && hour < 12) {
@@ -261,6 +261,7 @@ function buildSearchCard_(e, opt_error) {
 var now = new Date();
 var snoozeUntil = new Date(now.getTime()+(2 * 60 * 60 * 1000)); // set default snooze time as now + 2 hours
 GmailApp.createLabel("Snoozed");
+var userTimeZone = CalendarApp.getDefaultCalendar().getTimeZone();
 
 /**
  * Callback for rendering the card for a specific Gmail message. Only visable after the user has selected an email
