@@ -601,27 +601,21 @@ function completePoll (e) {
 
 function onFormResponse(e){
   console.log(e)
-  console.log(e.response.getItemResponses()[0])
-  // Get the response that was submitted.
-  var formResponse = e.response;
+  //console.log(e.response.getItemResponses()[0].getResponse())
+  console.log(e.source.getSummaryUrl())
 
-  // Get the items (i.e., responses to various questions)
-  // that were submitted.
-  var itemResponses = formResponse.getItemResponses();
-
-  // Create a variable emailBody to store the body
-  // of the email notification to be sent.
-  var emailBody = "New form response:\n\n";
-
+  // get the response that was submitted.
+  //var formResponse = e.response;
+  // get the items (i.e., responses to various questions) that were submitted.
+  //var itemResponses = formResponse.getItemResponses();
   // Put together the email body by appending all the
   // questions & responses to the variable emailBody.
-  itemResponses.forEach(function(itemResponse) {
-    var title = itemResponse.getItem().getTitle();
-    var response = itemResponse.getResponse();
-    emailBody += title + "\n" + response + "\n\n";
-  });
+  //itemResponses.forEach(function(itemResponse) {
+  //  var title = itemResponse.getItem().getTitle();
+  //  var response = itemResponse.getResponse();
+  //  emailBody += title + "\n" + response + "\n\n";
+  //});
+  emailBody = "There has been a new response \nView poll results at: " + e.source.getSummaryUrl()
 
-  // Send the email notification using the
-  // sendEmail() function.
   MailApp.sendEmail(Session.getActiveUser().getEmail(), "New form response", emailBody);
 }
