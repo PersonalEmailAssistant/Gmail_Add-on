@@ -289,11 +289,9 @@ function formatDatesDP(e) {
   dateOptions = JSON.parse(scriptProperties.getProperty("dpdateoptions"));
 
   var formattedDates = [];
-  var i = 0;
-  while (dateOptions.length > i) {
-    formattedDates.push(new Date(dateOptions[i]));
-    i += 1;
-  }
+  dateOptions.forEach(function(value) {
+    formattedDates.push(Utilities.formatDate(new Date(value.msSinceEpoch), userTimeZone, "EEE, MMM dd, hh:mm a")); 
+  })
   return formattedDates;
 }
 
