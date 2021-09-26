@@ -24,7 +24,7 @@ function doodlePoll(e) {
     rows.forEach(function(value){
       var button = CardService.newTextButton().setText("- "+value)
         .setOnClickAction(CardService.newAction()
-        .setFunctionName('bookMeeting').setParameters({time: value, formid: formid}));
+        .setFunctionName('bookMeetingCard').setParameters({time: value, formid: formid}));
       buttonSet.addButton(button);})
     
     var text1 = CardService.newTextParagraph().setText("View poll results: <a href="+form.getSummaryUrl()+">"+form.getSummaryUrl()+"</a> \n\nClick time to close poll and book meeting:");
@@ -650,25 +650,24 @@ function onFormResponse(e){
   console.log(e)
   //console.log(e.response.getItemResponses()[0].getResponse())
   console.log(e.source.getSummaryUrl())
-
-  // get the response that was submitted.
-  //var formResponse = e.response;
-  // get the items (i.e., responses to various questions) that were submitted.
-  //var itemResponses = formResponse.getItemResponses();
-  // Put together the email body by appending all the
-  // questions & responses to the variable emailBody.
-  //itemResponses.forEach(function(itemResponse) {
-  //  var title = itemResponse.getItem().getTitle();
-  //  var response = itemResponse.getResponse();
-  //  emailBody += title + "\n" + response + "\n\n";
-  //});
   emailBody = "There has been a new response \nView poll results at: " + e.source.getSummaryUrl()
-
   MailApp.sendEmail(Session.getActiveUser().getEmail(), "New form response", emailBody);
 }
 
-function bookMeeting(e){
-  console.log(e);
+function bookMeetingCard(e){
+  // this will eventually have to change to accommodate meeting duration. for now set to 30 minutes
+  // also will need to include additional email addresses
+  formid = e.parameters.formid;
+  var form = FormApp.openById(formid)
+  time = e.parameters.time;
+  hoursoffset = parseInt(Utilities.formatDate(now, "GMT", "hh"));
+  starttime = new Date(time + now.getFullYear());
+  starttime = new Date(starttime - (hoursoffset * 60 * 60 * 1000)); // stored date includes timezone which is an issue
+  endtime = new Date(starttime.getTime()+(30 * 60 * 1000)); // add 30 minutes in milliseconds
+  console.log(starttime);
+  console.log(endtime);
+  CalendarApp.getDefaultCalendar().createEvent(form.getItems()[0].getTitle(),starttime,endtime);
+  return closeDoodlePoll(e);
 }
 
 function closeDoodlePoll(e){
