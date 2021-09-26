@@ -2,6 +2,12 @@
 var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
 var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
 
+// some bugs to be fixed
+// 1. After click the saved locations on the side bar, the show map and show link buttons turns to the original ones
+//    checkSideBarOrComposing function performs weird
+// 2. The selected text didn't show the correct messages when switch one location to another
+// 3. The save and delete location buttons are missing
+
 //this callback function rendering ML UI on the composing section
 function onGmailCompose(e) {
   onComposing();
