@@ -16,7 +16,8 @@ function doodlePoll(e) {
     .setHeader(CardService.newCardHeader().setTitle("Doodle Polls"))
     .addSection(section);
 
-  items.forEach(function(formid) {
+  items.forEach(function(formarray) {
+    formid = formarray[0]
     section = CardService.newCardSection();
     form = FormApp.openById(formid);
     rows = form.getItems()[1].asGridItem().getRows();
@@ -63,21 +64,12 @@ function manageDoodlePollCard(e){
 
 // Section 1
 var titleDPvar;
-var notesDPvar;
+var meetingLengthDPvar;
 var locationDPvar = "TBC"; // Default value of 'To Be Confirmed'
 var otherLocationDPvar;
+var notesDPvar;
 
 // Section 2
-var meetingLengthDPvar;
-var textOptions;
-
-/*
-//if (dateOptions === null) dateOptions = [];
-if (textOptions === null) {
-  textOptions = [];
-}
-*/
-
 var dateUsedDP;
 
 // -----------------------------------------------------------------------------------
@@ -93,10 +85,10 @@ function generalInfoSection(e) {
     .setHeader("Step 1 of 3: General Information")
     .addWidget(headerDP1())
     .addWidget(titleDP())
-    .addWidget(notesDP())
-    .addWidget(getManangeCustomButtons())
+    .addWidget(meetingLengthDP())
     .addWidget(locationDP())
-    console.log(titleDPvar);
+    .addWidget(getManangeCustomButtons())
+    .addWidget(notesDP())
   return generalInfoSection;
 }
 
@@ -209,7 +201,7 @@ function titleDP(e) {
 
   var titleDP = CardService.newTextInput()
     .setFieldName("titleDPvalue")
-    .setTitle("Title of Doodle Poll")
+    .setTitle("Title of Meeting Poll")
     .setHint("Required")
     .setOnChangeAction(CardService.newAction()
       .setFunctionName('GeneralInfoCardUpdateDP'));
@@ -221,20 +213,19 @@ function titleDP(e) {
   return titleDP;
 }
 
-function notesDP(e) {
-
-  var notesDP = CardService.newTextInput()
-    .setFieldName("notesDPvalue")
-    .setTitle("Notes")
-    .setHint("Optional")
+function meetingLengthDP(e) {
+  var meetingLength = CardService.newTextInput()
+    .setFieldName("meetingLengthDPvalue")
+    .setTitle("Length of Meeting")
+    .setHint("Required. Record in minutes - a 2 hour meeting is '120'.")
     .setOnChangeAction(CardService.newAction()
       .setFunctionName('GeneralInfoCardUpdateDP'));
+    
+    if (meetingLengthDPvar != null) {
+      meetingLength.setValue(meetingLengthDPvar)
+    }
 
-  if (notesDPvar != null) {
-    notesDP.setValue(notesDPvar)
-  }
-
-  return notesDP;
+  return meetingLength;
 }
 
 function locationDP(e) {
@@ -273,6 +264,22 @@ function otherLocationDP(e) {
   return otherLocationDP;
 }
 
+function notesDP(e) {
+
+  var notesDP = CardService.newTextInput()
+    .setFieldName("notesDPvalue")
+    .setTitle("Notes")
+    .setHint("Optional")
+    .setOnChangeAction(CardService.newAction()
+      .setFunctionName('GeneralInfoCardUpdateDP'));
+
+  if (notesDPvar != null) {
+    notesDP.setValue(notesDPvar)
+  }
+
+  return notesDP;
+}
+
 
 // -------------------------- SECTION 2 - schedulingSection ------------------------
 
@@ -297,17 +304,6 @@ function schedulingButtons(e) {
     .addButton(schedulingTextButton);
 
   return schedulingButtonSet;
-}
-
-function meetingLengthDP(e) {
-  var meetingLength = CardService.newTextInput()
-    .setFieldName("meetingLengthKey")
-    .setTitle("Length of Meeting")
-    .setHint("Please record in minutes. A 2 hour meeting is recorded as 120.")
-    .setOnChangeAction(CardService.newAction()
-      .setFunctionName('handleMeetingLengthDP'));
-
-  return meetingLength;
 }
 
 function dateSelectorDP(e) {
@@ -354,12 +350,6 @@ function textSelectorDP(e) {
   return textSelector;
 }
 
-function textListDP(e) {
-  var textSelector = CardService.newTextInput()
-    .setFieldName("textSelectorKey")
-    .setValue("");
-}
-
 function addTextOptionButtonDP(e) {
 
   var addTextOptionButton = CardService.newTextButton()
@@ -398,7 +388,6 @@ function showDateOptionDP(e) {
 function showTextOptionDP(e) {
 
   var formattedText = ''
-
   checkPropertyDPTextOptions();
   var scriptProperties = PropertiesService.getUserProperties();
   textoptions = JSON.parse(scriptProperties.getProperty("dptextoptions"));
@@ -477,12 +466,17 @@ function switchHidden() {
 function GeneralInfoCardUpdateDP(e) {
   // Update global variables
   titleDPvar = e.formInput.titleDPvalue;
-  var scriptProperties = CacheService.getUserCache();
-  scriptProperties.put("dptitle",e.formInput.titleDPvalue);
-
+  if (!isNaN(e.formInput.meetingLengthDPvalue)) {
+    meetingLengthDPvar = e.formInput.meetingLengthDPvalue;
+  }
+  else meetingLengthDPvar = null;
   notesDPvar = e.formInput.notesDPvalue;
   locationDPvar = e.formInput.locationDPvalue;
   otherLocationDPvar = e.formInput.otherLocationDPvalue;
+
+  var scriptProperties = CacheService.getUserCache();
+  scriptProperties.put("dptitle",e.formInput.titleDPvalue);
+  scriptProperties.put("dplength",e.formInput.meetingLengthDPvalue);
 
   var updatedSection = generalInfoSection();
 
@@ -491,8 +485,8 @@ function GeneralInfoCardUpdateDP(e) {
     updatedSection.addWidget(otherLocationDP());
   }
 
-  // If a title has been entered, add a "Next" button
-  if (e.formInput.titleDPvalue != null) {
+  // If a title and meeting length has been entered, add a "Next" button
+  if (titleDPvar != null && meetingLengthDPvar != null) {
     updatedSection.addWidget(nextButtonDP1(e))
   }
   // Update with a child card
@@ -507,12 +501,15 @@ function GeneralInfoCardUpdateDP(e) {
 // Function runs on any updates to the Text Scheduling section
 function dateScheduleUpdateDP(e) {
   dateUsedDP = true;
+
   var dateScheduleSection = CardService.newCardSection()
-    .addWidget(meetingLengthDP())
     .addWidget(dateSelectorDP())
     .addWidget(addDateOptionButtonDP())
-    .addWidget(showDateOptionDP())
-    .addWidget(nextButtonDP2());
+    .addWidget(showDateOptionDP());
+
+  if (JSON.parse(scriptProperties.getProperty("dpdateoptions")).length >= 2) {
+    dateScheduleSection.addWidget(nextButtonDP2());
+  }
 
   var card = CardService.newCardBuilder()
     .addSection(schedulingSection())
@@ -522,16 +519,19 @@ function dateScheduleUpdateDP(e) {
   return CardService.newNavigation().updateCard(card.build());
 }
 
+
 // Function runs on any updates to the Text Scheduling section
 function textScheduleUpdateDP(e) {
   dateUsedDP = false;
 
   var textScheduleSection = CardService.newCardSection()
-    .addWidget(meetingLengthDP())
     .addWidget(textSelectorDP())
     .addWidget(addTextOptionButtonDP())
-    .addWidget(showTextOptionDP())
-    .addWidget(nextButtonDP2());
+    .addWidget(showTextOptionDP());
+
+  if (JSON.parse(scriptProperties.getProperty("dptextoptions")).length >= 2) {
+    textScheduleSection.addWidget(nextButtonDP2());
+  }
 
   var card = CardService.newCardBuilder()
     .addSection(schedulingSection())
@@ -539,10 +539,6 @@ function textScheduleUpdateDP(e) {
     .setFixedFooter(buildPreviousAndRootButtonSet());
 
   return CardService.newNavigation().updateCard(card.build());
-}
-
-function handleMeetingLengthDP(e) {
-  meetingLengthDPvar = e.formInput.meetingLengthKey;
 }
 
 function addDateOption(e) {
@@ -585,8 +581,15 @@ function ontoSection3 (e) {
 }
 
 function completePoll (e) {
+  // somethings up with global variables because it doesnt have the stored value
+  // so i am using UserCache instead
+  console.log("Meeting length:");
+  console.log(meetingLengthDPvar); 
+  ///
   var scriptProperties = CacheService.getUserCache();
-  var title = scriptProperties.get("dptitle")
+  var title = scriptProperties.get("dptitle");
+  var meetinglength = scriptProperties.get("dplength");
+
   // Title / Description
   var form = FormApp.create(title);
   form.addParagraphTextItem().setTitle(title);
@@ -634,7 +637,7 @@ function completePoll (e) {
   console.log(form.getPublishedUrl())
   ScriptApp.newTrigger("onFormResponse").forForm(form).onFormSubmit().create();
   getPropertyDPManaging();
-  addNewDoodlePoll(form.getId());
+  addNewDoodlePoll(form.getId(), meetinglength);
 
   var text = CardService.newTextParagraph().setText("Doodle poll link: <a href="+form.getPublishedUrl()+">"+form.getPublishedUrl()+"</a>");
   var section = CardService.newCardSection()
@@ -660,12 +663,20 @@ function bookMeetingCard(e){
   // this will eventually have to change to accommodate meeting duration. for now set to 30 minutes
   // also will need to include additional email addresses
   formid = e.parameters.formid;
+  var storedpolls = getPropertyDPManaging();
+  var meetinglength = 30; // set to 30 minutes by default
+  storedpolls.forEach(function(array) {if (array[0]== formid) meetinglength = array[1]})
+  console.log(meetinglength)
+
   var form = FormApp.openById(formid)
   time = e.parameters.time;
-  hoursoffset = parseInt(Utilities.formatDate(now, "GMT", "hh"));
+  hoursoffset = parseInt(Utilities.formatDate(now, userTimeZone, "hh"))-parseInt(Utilities.formatDate(now, "GMT", "hh"));
+  console.log(hoursoffset)
+
   starttime = new Date(time + now.getFullYear());
-  starttime = new Date(starttime - (hoursoffset * 60 * 60 * 1000)); // stored date includes timezone which is an issue
-  endtime = new Date(starttime.getTime()+(30 * 60 * 1000)); // add 30 minutes in milliseconds
+  console.log(starttime);
+  starttime = new Date(starttime.getTime()-(hoursoffset * 60 * 60 * 1000)); // stored date includes timezone which is an issue
+  endtime = new Date(starttime.getTime()+(meetinglength * 60 * 1000)); // add 30 minutes in milliseconds
   console.log(starttime);
   console.log(endtime);
   CalendarApp.getDefaultCalendar().createEvent(form.getItems()[0].getTitle(),starttime,endtime);
@@ -676,11 +687,12 @@ function closeDoodlePoll(e){
   console.log(e);
   var form = FormApp.openById(e.parameters.formid)
   form.setAcceptingResponses(false);
+  DriveApp.getFileById(e.parameters.formid).setTrashed(true);
 
   var scriptProperties = PropertiesService.getUserProperties();
   var newarray = new Array;
   JSON.parse(scriptProperties.getProperty("dpmanaging")).forEach(function(value) {
-    if (JSON.stringify(value)!=JSON.stringify(e.parameters.formid)) newarray.push(value);});
+    if (value[0]!=JSON.stringify(e.parameters.formid)) newarray.push(value);});
   scriptProperties.setProperty("dpmanaging", JSON.stringify(newarray));
   return doodlePoll(e)
 }

@@ -28,7 +28,7 @@
     "https://www.googleapis.com/auth/calendar.addons.current.event.read",
     "https://www.googleapis.com/auth/drive.addons.metadata.readonly",
     "https://mail.google.com/",
-    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/forms"
   ],
   "urlFetchWhitelist": [],
