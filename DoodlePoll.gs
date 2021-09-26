@@ -17,13 +17,24 @@ function doodlePoll(e) {
     .addSection(section);
 
   items.forEach(function(formid) {
-    console.log("inside form id loop");
     section = CardService.newCardSection();
     form = FormApp.openById(formid);
-    console.log(form.getTitle());
-    var text1 = CardService.newTextParagraph().setText("View poll results: <a href="+form.getSummaryUrl()+">"+form.getSummaryUrl()+"</a>");
-    section.setHeader(DriveApp.getFileById(form.getId()).getName());
-    section.addWidget(text1);
+    rows = form.getItems()[1].asGridItem().getRows();
+    buttonSet = CardService.newButtonSet();
+    rows.forEach(function(value){
+      var button = CardService.newTextButton().setText("- "+value)
+        .setOnClickAction(CardService.newAction()
+        .setFunctionName('bookMeeting').setParameters({time: value, formid: formid}));
+      buttonSet.addButton(button);})
+    
+    var text1 = CardService.newTextParagraph().setText("View poll results: <a href="+form.getSummaryUrl()+">"+form.getSummaryUrl()+"</a> \n\nClick time to close poll and book meeting:");
+    var text2 = CardService.newTextParagraph().setText("Or close poll without booking meeting: ")
+    var button2 = CardService.newTextButton().setText("Close poll")
+        .setOnClickAction(CardService.newAction()
+        .setFunctionName('closeDoodlePoll').setParameters({formid: formid}));
+
+    section.setHeader("Meeting Poll: "+form.getItems()[0].getTitle());
+    section.addWidget(text1).addWidget(buttonSet).addWidget(text2).addWidget(button2);
     card.addSection(section);
   })
 
@@ -654,4 +665,12 @@ function onFormResponse(e){
   emailBody = "There has been a new response \nView poll results at: " + e.source.getSummaryUrl()
 
   MailApp.sendEmail(Session.getActiveUser().getEmail(), "New form response", emailBody);
+}
+
+function bookMeeting(e){
+  console.log(e);
+}
+
+function closeDoodlePoll(e){
+  console.log(e);
 }
