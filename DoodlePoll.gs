@@ -10,6 +10,21 @@ function doodlePoll(e) {
   return card.build();
 }
 
+function createDoodlePoll(e){
+  var scriptProperties = PropertiesService.getUserProperties();
+  scriptProperties.setProperty("dpdateoptions", JSON.stringify([]));
+  scriptProperties.setProperty("dptextoptions", JSON.stringify([]));
+
+  var card = CardService.newCardBuilder()
+    .addSection(generalInfoSection())
+    .setFixedFooter(buildPreviousAndRootButtonSet());
+  return card.build();
+}
+
+function manageDoodlePoll(e){
+  
+}
+
 // -----------------------------------------------------------------------------------
 // -------------------------- DOODLE POLL GLOBAL VARIABLES ---------------------------
 // -----------------------------------------------------------------------------------
@@ -536,8 +551,6 @@ function ontoSection3 (e) {
 }
 
 function completePoll (e) {
-  console.log(titleDPvar);
-
   // Title / Description
   var form = FormApp.create("Doodle Poll Form");
   form.addParagraphTextItem()
@@ -584,10 +597,10 @@ function completePoll (e) {
   else {
     form.setCollectEmail(true);
   }
-
-
   console.log(form.getPublishedUrl())
   ScriptApp.newTrigger("onFormResponse").forForm(form).onFormSubmit().create();
+  checkPropertyDPManaging();
+  addNewDoodlePoll(form.getId());
 
   var section = CardService.newCardSection()
     .setHeader("Meeting poll has been created successfully.")

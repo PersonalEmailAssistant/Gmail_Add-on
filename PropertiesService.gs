@@ -57,6 +57,15 @@ function checkPropertyDPDateOptions(){
   }
 }
 
+function checkPropertyDPManaging(){
+  var scriptProperties = PropertiesService.getUserProperties();
+  if (scriptProperties.getProperty("dpmanaging")===null){
+    var defaultdpdateoptions = [];
+    scriptProperties.setProperty("dpmanaging", JSON.stringify(defaultdpdateoptions));
+  }
+  console.log(JSON.parse(scriptProperties.getProperty("dpmanaging"))); // testing
+}
+
 //--------------section for checking whether user is using the sidebar or composing section------------
   function onSideBar() {
     var isOnSideBar = true;
@@ -97,6 +106,7 @@ function manageCustomButtonsCard(){
 
   var addaction = CardService.newAction()
   .setFunctionName('addNewQuickButton');
+  //.setParameters({name:"quicksnooze", itemname: " Hours"});
   var snoozetimeinput = CardService.newTextInput()
     .setFieldName("addquickbuttoninput")
     .setTitle("Enter new Snooze time in hours");
@@ -235,12 +245,7 @@ function addNewRecipientGroup(e){
   var addresses = e.formInput.recipientgroupaddressesinput;
   if (name == undefined || addresses == undefined) return;
   checkPropertyrecipientgroups();
-  var scriptProperties = PropertiesService.getUserProperties();
-  var array = JSON.parse(scriptProperties.getProperty("recipientgroups"));
-  console.log(array);
-  array.push([name, addresses]);
-  console.log(array);
-  scriptProperties.setProperty("recipientgroups", JSON.stringify(array));
+  addPropertiesServiceItem("recipientgroups", [name, addresses])
   return onGmailMessage(e);
 }
 
@@ -248,11 +253,7 @@ function addNewQuickButton(e){
   console.log(e.formInput.addquickbuttoninput);
   if (e.formInput.addquickbuttoninput == undefined) return;
   checkPropertyquicksnooze();
-  var scriptProperties = PropertiesService.getUserProperties();
-  var quicksnoozebuttons = JSON.parse(scriptProperties.getProperty("quicksnooze"));
-  var buttonname = e.formInput.addquickbuttoninput + " Hours"
-  quicksnoozebuttons.push([buttonname, ""+e.formInput.addquickbuttoninput]);
-  scriptProperties.setProperty("quicksnooze", JSON.stringify(quicksnoozebuttons));
+  addPropertiesServiceItem("quicksnooze", [e.formInput.addquickbuttoninput + " Hours", ""+e.formInput.addquickbuttoninput])
   return onGmailMessage(e);
 }
 
@@ -260,14 +261,18 @@ function addQuickLocationButton(e){
   console.log(e.formInput.addQuickLocationInput);
   if (e.formInput.addQuickLocationInput == undefined) return;
   checkPropertyDPLocation();
-  var scriptProperties = PropertiesService.getUserProperties();
-  var quickLocationButtons = JSON.parse(scriptProperties.getProperty("dplocations"));
-  var buttonname = e.formInput.addQuickLocationInput
-  quickLocationButtons.push([buttonname, ""+e.formInput.addQuickLocationInput]);
-  scriptProperties.setProperty("dplocations", JSON.stringify(quickLocationButtons));
+  addPropertiesServiceItem("dplocations", [e.formInput.addQuickLocationInput, ""+e.formInput.addQuickLocationInput])
   return manageCustomButtonsCard(e);
 }
 
+function addNewDoodlePoll(formid){addPropertiesServiceItem("dpmanaging", formid)}
+
+function addPropertiesServiceItem(name, item){
+  var scriptProperties = PropertiesService.getUserProperties();
+  var array = JSON.parse(scriptProperties.getProperty(name));
+  array.push(item);
+  scriptProperties.setProperty(name, JSON.stringify(array));
+}
 
 function removePropertiesServiceItem(e){
   var item = JSON.parse(e.parameters.item);
@@ -275,7 +280,7 @@ function removePropertiesServiceItem(e){
 
   var newarray = new Array;
   JSON.parse(scriptProperties.getProperty(e.parameters.name)).forEach(function(value) {
-    if (value[0]!=item[0] && value[1]!=item[1]) newarray.push(value);});
+    if (JSON.stringify(value)!=JSON.stringify(item)) newarray.push(value);});
 
   scriptProperties.setProperty(e.parameters.name, JSON.stringify(newarray));
   return manageCustomButtonsCard(e);
