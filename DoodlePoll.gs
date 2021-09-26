@@ -673,4 +673,13 @@ function bookMeeting(e){
 
 function closeDoodlePoll(e){
   console.log(e);
+  var form = FormApp.openById(e.parameters.formid)
+  form.setAcceptingResponses(false);
+
+  var scriptProperties = PropertiesService.getUserProperties();
+  var newarray = new Array;
+  JSON.parse(scriptProperties.getProperty("dpmanaging")).forEach(function(value) {
+    if (JSON.stringify(value)!=JSON.stringify(e.parameters.formid)) newarray.push(value);});
+  scriptProperties.setProperty("dpmanaging", JSON.stringify(newarray));
+  return doodlePoll(e)
 }
