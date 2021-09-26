@@ -17,14 +17,14 @@ function doodlePoll(e) {
     .addSection(section);
 
   items.forEach(function(formid) {
+    console.log("inside form id loop");
     section = CardService.newCardSection();
-    console.log("here inside loop")
     form = FormApp.openById(formid);
-    console.log(form.getSummaryUrl);
-    //var text1 = CardService.newTextParagraph()
-    //.setText("View poll results: "+form.getSummaryUrl());
-    //section.setHeader(form.getTitle()).addWidget(text1);
-    //card.addSection(section);
+    console.log(form.getTitle());
+    var text1 = CardService.newTextParagraph().setText("View poll results: <a href="+form.getSummaryUrl()+">"+form.getSummaryUrl()+"</a>");
+    section.setHeader(DriveApp.getFileById(form.getId()).getName());
+    section.addWidget(text1);
+    card.addSection(section);
   })
 
   card.setFixedFooter(buildPreviousAndRootButtonSet());
@@ -576,12 +576,9 @@ function ontoSection3 (e) {
 function completePoll (e) {
   var scriptProperties = CacheService.getUserCache();
   var title = scriptProperties.get("dptitle")
-  console.log(title);
   // Title / Description
   var form = FormApp.create(title);
-  form.addParagraphTextItem()
-    .setTitle(e.formInput.locationDPvalue);
-
+  form.addParagraphTextItem().setTitle(title);
 
   // If only 1 vote allowed, provide radio buttons
   if (e.formInput.switchSingleVoteKey) {
