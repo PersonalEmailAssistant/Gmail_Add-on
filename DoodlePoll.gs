@@ -636,14 +636,16 @@ function completePoll (e) {
   getPropertyDPManaging();
   addNewDoodlePoll(form.getId());
 
+  var text = CardService.newTextParagraph().setText("Doodle poll link: <a href="+form.getPublishedUrl()+">"+form.getPublishedUrl()+"</a>");
   var section = CardService.newCardSection()
     .setHeader("Meeting poll has been created successfully.")
+    .addWidget(text);
 
   var card = CardService.newCardBuilder()
     .addSection(section)
     .setFixedFooter(buildPreviousAndRootButtonSet());
 
-  //return CardService.newNavigation().updateCard(card.build()); //this line causes an error for me
+  return CardService.newNavigation().updateCard(card.build()); //this line causes an error for me
 }
 
 function onFormResponse(e){
