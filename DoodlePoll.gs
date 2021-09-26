@@ -1,12 +1,33 @@
 // Begin by building the root card with 1st section 'General Info'.
 function doodlePoll(e) {
-  var scriptProperties = PropertiesService.getUserProperties();
-  scriptProperties.setProperty("dpdateoptions", JSON.stringify([]));
-  scriptProperties.setProperty("dptextoptions", JSON.stringify([]));
+  items = getPropertyDPManaging();
+  if (items.length == 0){return createDoodlePoll(e);}
+  var button1 = CardService.newTextButton()
+      .setText('Create new doodle poll')
+      .setOnClickAction(CardService.newAction()
+        .setFunctionName('createDoodlePoll'))
+      .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
+
+  var section = CardService.newCardSection()
+    .addWidget(button1)
+    .addWidget(CardService.newDivider());
 
   var card = CardService.newCardBuilder()
-    .addSection(generalInfoSection())
-    .setFixedFooter(buildPreviousAndRootButtonSet());
+    .setHeader(CardService.newCardHeader().setTitle("Doodle Polls"))
+    .addSection(section);
+
+  items.forEach(function(formid) {
+    section = CardService.newCardSection();
+    console.log("here inside loop")
+    form = FormApp.openById(formid);
+    console.log(form.getSummaryUrl);
+    //var text1 = CardService.newTextParagraph()
+    //.setText("View poll results: "+form.getSummaryUrl());
+    //section.setHeader(form.getTitle()).addWidget(text1);
+    //card.addSection(section);
+  })
+
+  card.setFixedFooter(buildPreviousAndRootButtonSet());
   return card.build();
 }
 
@@ -21,7 +42,7 @@ function createDoodlePoll(e){
   return card.build();
 }
 
-function manageDoodlePoll(e){
+function manageDoodlePollCard(e){
   
 }
 
@@ -129,6 +150,7 @@ function headerDP3(e) {
 // ---------------------------------- "NEXT" BUTTONS ------------------------------------
 
 function nextButtonDP1(e) {
+  console.log(e);
 
     var nextButton = CardService.newTextButton()
       .setText('Next')
@@ -442,9 +464,11 @@ function switchHidden() {
 
 // Function runs on any updates to the general info section, excluding the optional notesDP value
 function GeneralInfoCardUpdateDP(e) {
-
   // Update global variables
   titleDPvar = e.formInput.titleDPvalue;
+  var scriptProperties = CacheService.getUserCache();
+  scriptProperties.put("dptitle",e.formInput.titleDPvalue);
+
   notesDPvar = e.formInput.notesDPvalue;
   locationDPvar = e.formInput.locationDPvalue;
   otherLocationDPvar = e.formInput.otherLocationDPvalue;
@@ -458,7 +482,7 @@ function GeneralInfoCardUpdateDP(e) {
 
   // If a title has been entered, add a "Next" button
   if (e.formInput.titleDPvalue != null) {
-    updatedSection.addWidget(nextButtonDP1())
+    updatedSection.addWidget(nextButtonDP1(e))
   }
   // Update with a child card
   var card = CardService.newCardBuilder()
@@ -533,7 +557,6 @@ function addTextOption(e) {
 // -----------------------------------------------------------------------------------
 
 function ontoSection2 (e) {
-  console.log(titleDPvar);
   var card = CardService.newCardBuilder()
     .addSection(schedulingSection())
     .setFixedFooter(buildPreviousAndRootButtonSet());
@@ -551,8 +574,11 @@ function ontoSection3 (e) {
 }
 
 function completePoll (e) {
+  var scriptProperties = CacheService.getUserCache();
+  var title = scriptProperties.get("dptitle")
+  console.log(title);
   // Title / Description
-  var form = FormApp.create("Doodle Poll Form");
+  var form = FormApp.create(title);
   form.addParagraphTextItem()
     .setTitle(e.formInput.locationDPvalue);
 
@@ -599,7 +625,7 @@ function completePoll (e) {
   }
   console.log(form.getPublishedUrl())
   ScriptApp.newTrigger("onFormResponse").forForm(form).onFormSubmit().create();
-  checkPropertyDPManaging();
+  getPropertyDPManaging();
   addNewDoodlePoll(form.getId());
 
   var section = CardService.newCardSection()

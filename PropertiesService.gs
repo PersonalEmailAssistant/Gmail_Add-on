@@ -57,13 +57,14 @@ function checkPropertyDPDateOptions(){
   }
 }
 
-function checkPropertyDPManaging(){
+function getPropertyDPManaging(){
   var scriptProperties = PropertiesService.getUserProperties();
   if (scriptProperties.getProperty("dpmanaging")===null){
     var defaultdpdateoptions = [];
     scriptProperties.setProperty("dpmanaging", JSON.stringify(defaultdpdateoptions));
   }
   console.log(JSON.parse(scriptProperties.getProperty("dpmanaging"))); // testing
+  return JSON.parse(scriptProperties.getProperty("dpmanaging"));
 }
 
 //--------------section for checking whether user is using the sidebar or composing section------------
