@@ -1,16 +1,11 @@
 //maplink global variabls
-var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
-var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
-
-// some bugs to be fixed
-// 1. After click the saved locations on the side bar, the show map and show link buttons turns to the original ones
-//    checkSideBarOrComposing function performs weird
-// 2. The selected text didn't show the correct messages when switch one location to another
-// 3. The save and delete location buttons are missing
+// var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
+// var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
 
 //this callback function rendering ML UI on the composing section
 function onGmailCompose(e) {
   onComposing();
+  checkPropertymap();
   var card = CardService.newCardBuilder()
       .addSection(generalSection())
       .addSection(mapSavedSection());
@@ -60,18 +55,20 @@ function mapSavedSection(e) {
   }
   var mapsavedSection = CardService.newCardSection()
   mapsavedSection
+    .setHeader("Saved Locations")
     .addWidget(mapsavedButtonSet)
     .addWidget(CardService.newTextParagraph().setText("\n\n"))
     .addWidget(getManangeCustomButtons());
   return mapsavedSection;
 }
 //checking whether to display all the buttons or not
-function update(e) {
-  if (e == null) return;
-  if (e.formInput.position != null && e.formInput.location != null) {
-    updateCard();
-  }
-}
+// function update(e) {
+
+//   if (e == null) return;
+//   if (e.formInput.position != null && e.formInput.location != null) {
+//     updateCard();
+//   }
+// }
 function generalSection(e) {
   
   var generalSection = CardService.newCardSection()
@@ -86,47 +83,44 @@ function generalSection(e) {
 }
 
 function locationInput(e) {
-  
+  checkPropertymap();
+  var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
+  var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
+  // console.log(selectedlocation[0]);
+  // console.log(selectedlocation);
   var locationInput = CardService.newTextInput()
     .setFieldName('location')
     .setTitle('Location')
-    .setHint('Required');
-  
-  if (locationInput != null) {
-    locationInput.setValue(selectedlocation[0])
-  }
-  update();
+    .setHint('Required')
+    .setValue(selectedlocation[0]);
 
   return locationInput; 
 }
 
 function positionInput(e) {
-  
+  checkPropertymap();
+  var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
+  var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
   var positionInput = CardService.newTextInput()
     .setFieldName('position')
     .setTitle('Latitude and Longitude')
     .setHint('Required')
+    .setValue(selectedlocation[1])
     .setOnChangeAction(CardService.newAction()
       .setFunctionName('updateCard'));
-  
-  if (positionInput != null) {
-    positionInput.setValue(selectedlocation[1])
-  }
-  update();
 
   return positionInput; 
 }
 
 function massageInput(e) {
-  
+  checkPropertymap();
+  var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
+  var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
   var massageInput = CardService.newTextInput()
     .setFieldName('message')
     .setTitle('Message')
-    .setHint('Optional');
-  
-  if (massageInput != null) {
-    massageInput.setValue(selectedlocation[2])
-  }
+    .setHint('Optional')
+    .setValue(selectedlocation[2]);
 
   return massageInput; 
 }
@@ -197,10 +191,12 @@ function addLocationButton(e) {
 
 function updateCard(e) {
   //update global variables
-  if (e.formInput.location != null && e.formInput.position != null) {
-    selectedlocation[0] = e.formInput.location;
-    selectedlocation[1] = e.formInput.position;
-  }
+  // var scriptProperties = PropertiesService.getUserProperties();
+  // var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
+  // if (e.formInput.location != null && e.formInput.position != null) {
+  //   selectedlocation[0] = e.formInput.location;
+  //   selectedlocation[1] = e.formInput.position;
+  // }
   var update = generalSection();
   // update.addWidget(inserting());
 
@@ -329,14 +325,20 @@ function onGmailInsertMap(e) {
 function setDefaultmapLocation(e){
   var scriptProperties = PropertiesService.getUserProperties();
   scriptProperties.setProperty("mapselected", JSON.stringify([e.parameters.name,e.parameters.coordinates, e.parameters.message]));
-  return CardService.newNavigation().updateCard(onGmailCompose())
+  if (checkSideBarOrComposing() == true){ 
+    return CardService.newNavigation().updateCard(onGmailSideBarML());
+  } else if (checkSideBarOrComposing() == false){
+    return CardService.newNavigation().updateCard(onGmailCompose());
+  }
 }
 
-function saveNewLocation(e){
+function saveNewLocation(e){  
+  
   checkPropertymap();
-  // var scriptProperties = PropertiesService.getUserProperties(); // this should allow for long-term storage
-  // var savedlocation = JSON.parse(scriptProperties.getProperty("map"));
-  if(savedlocation[0] == null || savedlocation[1] == null || e.formInput.location == null || e.formInput.position == null){return;} 
+  var scriptProperties = PropertiesService.getUserProperties(); // this should allow for long-term storage
+  var savedlocation = JSON.parse(scriptProperties.getProperty("map"));
+  console.log(savedlocation)
+  if(e.formInput.location == null || e.formInput.position == null){return;} 
   var message = "";
   var flag = 0;
   if (e.formInput.message!=undefined) message = e.formInput.message;
@@ -348,22 +350,32 @@ function saveNewLocation(e){
   })
   if(flag == 0) savedlocation.push([e.formInput.location,e.formInput.position, message])
   
-  console.log(savedlocation)
+
   
   scriptProperties.setProperty("map", JSON.stringify(savedlocation));
   scriptProperties.setProperty("mapselected", JSON.stringify([e.formInput.location,e.formInput.position, message]));
-  return CardService.newNavigation().updateCard(onGmailCompose())
+  if (checkSideBarOrComposing() == true){ 
+    return CardService.newNavigation().updateCard(onGmailSideBarML())
+  } else if (checkSideBarOrComposing() == false){
+    return CardService.newNavigation().updateCard(onGmailCompose())
+  }
 }
 
 function deleteLocation(e){
   checkPropertymap();
-  // var scriptProperties = PropertiesService.getUserProperties(); // this should allow for long-term storage
-  // var savedlocation = JSON.parse(scriptProperties.getProperty("map"));
+  var scriptProperties = PropertiesService.getUserProperties(); // this should allow for long-term storage
+  var savedlocation = JSON.parse(scriptProperties.getProperty("map"));
+  console.log(savedlocation)
   var message = "";
   if (e.formInput.message!=undefined) message = e.formInput.message;
   savedlocation.push([e.formInput.location,e.formInput.position, message])
-  console.log(savedlocation)
+
   scriptProperties.deleteProperty("map");
   scriptProperties.deleteProperty("mapselected");
-  return CardService.newNavigation().updateCard(onGmailCompose())
+  
+  if (checkSideBarOrComposing() == true){ 
+    return CardService.newNavigation().updateCard(onGmailSideBarML())
+  } else if (checkSideBarOrComposing() == false){
+    return CardService.newNavigation().updateCard(onGmailCompose())
+  }
 }
