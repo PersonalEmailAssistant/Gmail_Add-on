@@ -1,7 +1,3 @@
-//maplink global variabls
-// var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
-// var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
-
 //this callback function rendering ML UI on the composing section
 function onGmailCompose(e) {
   onComposing();
@@ -27,8 +23,6 @@ function mapSavedSection(e) {
   // add buttons with saved locations
   var scriptProperties = PropertiesService.getUserProperties();
   var savedlocation = JSON.parse(scriptProperties.getProperty("map"));
-
-  
 
   var mapsavedButtonSet = CardService.newButtonSet();
   savedlocation.forEach(function(value) {
@@ -61,22 +55,17 @@ function mapSavedSection(e) {
     .addWidget(getManangeCustomButtons());
   return mapsavedSection;
 }
-//checking whether to display all the buttons or not
-// function update(e) {
 
-//   if (e == null) return;
-//   if (e.formInput.position != null && e.formInput.location != null) {
-//     updateCard();
-//   }
-// }
 function generalSection(e) {
   
   var generalSection = CardService.newCardSection()
-    .setHeader('Insert Map Link')
+    .setHeader('Map Link')
     .addWidget(locationInput())
     .addWidget(positionInput())
     .addWidget(massageInput())
     .addWidget(inserting())
+    .addWidget(addLocationButton())
+    .addWidget(deleteLocationButton())
     ;
 
   return generalSection;
@@ -86,8 +75,7 @@ function locationInput(e) {
   checkPropertymap();
   var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
   var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
-  // console.log(selectedlocation[0]);
-  // console.log(selectedlocation);
+
   var locationInput = CardService.newTextInput()
     .setFieldName('location')
     .setTitle('Location')
@@ -105,9 +93,7 @@ function positionInput(e) {
     .setFieldName('position')
     .setTitle('Latitude and Longitude')
     .setHint('Required')
-    .setValue(selectedlocation[1])
-    .setOnChangeAction(CardService.newAction()
-      .setFunctionName('updateCard'));
+    .setValue(selectedlocation[1]);
 
   return positionInput; 
 }
@@ -157,7 +143,6 @@ function inserting(e) {
     .addButton(insertMapButton);
 
   return buttonSet;
-  
 }
 
 function deleteLocationButton(e) {
@@ -168,9 +153,6 @@ function deleteLocationButton(e) {
           CardService.newAction()
             .setFunctionName('deleteLocation'))
         .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
-
-    // var deleteLocationSet = CardService.newButtonSet()
-    //   .addButton(deleteLocationButton)
 
     return deleteLocationButton;
 }
@@ -183,44 +165,7 @@ function addLocationButton(e) {
             .setFunctionName('saveNewLocation'))
         .setTextButtonStyle(CardService.TextButtonStyle.TEXT);
 
-    // var addLocationSet = CardService.newButtonSet()
-    //   .addButton(addLocationButton)
-
     return addLocationButton;
-}
-
-function updateCard(e) {
-  //update global variables
-  // var scriptProperties = PropertiesService.getUserProperties();
-  // var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
-  // if (e.formInput.location != null && e.formInput.position != null) {
-  //   selectedlocation[0] = e.formInput.location;
-  //   selectedlocation[1] = e.formInput.position;
-  // }
-  var update = generalSection();
-  // update.addWidget(inserting());
-
-  var buttonSet = CardService.newButtonSet()
-    .addButton(addLocationButton())
-    .addButton(deleteLocationButton());
-
-  if (e.formInput.location != null && e.formInput.position != null){
-    update.addWidget(buttonSet);
-  }
-
-  // Update with a child card
-  var card = CardService.newCardBuilder()
-    .addSection(update)
-    .addSection(mapSavedSection());
-  
-  if (checkSideBarOrComposing() == true) {
-    card = CardService.newCardBuilder()
-    .addSection(update)
-    .addSection(mapSavedSection())
-    .setFixedFooter(buildPreviousAndRootButtonSet());
-  }
-
-  return CardService.newNavigation().updateCard(card.build());
 }
 
 /**
@@ -231,11 +176,15 @@ function updateCard(e) {
  */
 function onGmailInsertLink(e) {
   // Get the text that was entered by the user.
+  if(e.formInput.location == null || e.formInput.position == null){
+    return CardService.newActionResponseBuilder()
+      .setNotification(CardService.newNotification()
+          .setText("Please type in required fields first. :)"))
+      .build();
+  }
   var location = e.formInput.location;
   var position = e.formInput.position;
   // parameter to act as a cache buster.
-  // test1 for address
-  // test2 for the coordinate
   if (!location) {return}
   var linkContent = ""
   if (position) {
@@ -275,6 +224,12 @@ function onGmailInsertLink(e) {
  */
 function onGmailInsertMap(e) {
   console.log(e);
+  if(e.formInput.location == null || e.formInput.position == null){
+    return CardService.newActionResponseBuilder()
+      .setNotification(CardService.newNotification()
+          .setText("Please type in required fields first. :)"))
+      .build();
+  }
   // Get the text that was entered by the user.
   var location = e.formInput.location;
   var position = e.formInput.position;
@@ -333,12 +288,16 @@ function setDefaultmapLocation(e){
 }
 
 function saveNewLocation(e){  
-  
   checkPropertymap();
   var scriptProperties = PropertiesService.getUserProperties(); // this should allow for long-term storage
   var savedlocation = JSON.parse(scriptProperties.getProperty("map"));
   console.log(savedlocation)
-  if(e.formInput.location == null || e.formInput.position == null){return;} 
+  if(e.formInput.location == null || e.formInput.position == null){
+    return CardService.newActionResponseBuilder()
+      .setNotification(CardService.newNotification()
+          .setText("Please type in required fields before saving location."))
+      .build();
+  } 
   var message = "";
   var flag = 0;
   if (e.formInput.message!=undefined) message = e.formInput.message;
@@ -349,9 +308,7 @@ function saveNewLocation(e){
       value[2] = message;}
   })
   if(flag == 0) savedlocation.push([e.formInput.location,e.formInput.position, message])
-  
 
-  
   scriptProperties.setProperty("map", JSON.stringify(savedlocation));
   scriptProperties.setProperty("mapselected", JSON.stringify([e.formInput.location,e.formInput.position, message]));
   if (checkSideBarOrComposing() == true){ 
