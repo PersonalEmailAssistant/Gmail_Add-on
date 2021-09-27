@@ -691,8 +691,9 @@ function closeDoodlePoll(e){
 
   var scriptProperties = PropertiesService.getUserProperties();
   var newarray = new Array;
-  JSON.parse(scriptProperties.getProperty("dpmanaging")).forEach(function(value) {
-    if (value[0]!=JSON.stringify(e.parameters.formid)) newarray.push(value);});
+  dpmanaging = JSON.parse(scriptProperties.getProperty("dpmanaging"))
+  dpmanaging.forEach(function(value) {
+    if (value[0]!=e.parameters.formid) newarray.push(value);});
   scriptProperties.setProperty("dpmanaging", JSON.stringify(newarray));
   return doodlePoll(e)
 }
