@@ -70,16 +70,19 @@ function getPropertyDPManaging(){
 
 //--------------section for checking whether user is using the sidebar or composing section------------
   function onSideBar() {
+    var scriptProperties = PropertiesService.getUserProperties();
     var isOnSideBar = true;
     scriptProperties.setProperty("isOnSideBar", JSON.stringify(isOnSideBar));
   }
 
   function onComposing() {
+    var scriptProperties = PropertiesService.getUserProperties();
     var isOnSideBar = false;
     scriptProperties.setProperty("isOnSideBar", JSON.stringify(isOnSideBar));
   }
 
   function checkSideBarOrComposing() {
+    var scriptProperties = PropertiesService.getUserProperties();
     var isOnSideBar = JSON.parse(scriptProperties.getProperty("isOnSideBar"));
     console.log(isOnSideBar);
     return isOnSideBar;
