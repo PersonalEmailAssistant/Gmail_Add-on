@@ -32,3 +32,14 @@ Potential Issue
 - bug fixes on the map link(allow adding null positon into propertiesService, which crashes the add-on)
 - now map link have two seperate interface, one on composing section, the other is sidebar section.
 - Combined with the other newest doodle poll changes
+- Map link now have 'save location' & 'delete location' buttons visible by default
+- Map link will now push notification when user want to use any functions without type something in
+
+Known issue
+
+- If you open MapLink on sidebar first, and then open MapLink on compose again without close the original one, once you close the one on compose and continue using MapLink on sidebar, it will perform compose functions. (the boolean flag used to detect whether on sidebar or composing has been changed)
+
+Workaround
+
+- Push notifications or add warning messages within the app(this might affect the experiences)
+- tell the user do not open the same function on both place at the same time
