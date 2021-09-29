@@ -503,7 +503,7 @@ function dateScheduleUpdateDP(e) {
     .addWidget(dateSelectorDP())
     .addWidget(addDateOptionButtonDP())
     .addWidget(showDateOptionDP());
-
+  var scriptProperties = PropertiesService.getUserProperties();
   if (JSON.parse(scriptProperties.getProperty("dpdateoptions")).length >= 2) {
     dateScheduleSection.addWidget(nextButtonDP2());
   }
@@ -667,7 +667,7 @@ function bookMeetingCard(e){
   time = e.parameters.time;
 
   var action = CardService.newAction()
-    .setFunctionName('bookMeetingCard')
+    .setFunctionName('bookMeeting')
     .setParameters({time: e.parameters.time, formid: e.parameters.formid});
   var bookButton = CardService.newTextButton()
     .setText('Confirm Meeting and Close Poll')
@@ -677,7 +677,7 @@ function bookMeetingCard(e){
   emailstring = "";
   emails.forEach(function(address) {emailstring +=address+" "})
 
-  var invitetext = CardService.newTextParagraph().setText("Book "+form.getItems()[0].getTitle()+" for "+time+"\nEmail Invitation:");
+  var invitetext = CardService.newTextParagraph().setText(form.getItems()[0].getTitle()+" for "+time+"\n\nEmail Invitation:");
   var emailtext = CardService.newTextParagraph().setText("Invited: "+emailstring);
   var emailField = CardService.newTextInput().setFieldName("addemails").setTitle("Add emails");
   var addemailsubmit = CardService.newTextButton().setText('Add Email')
@@ -724,11 +724,11 @@ function bookMeeting(e){
   console.log(meetinglength)
   emailstring = "";
   emails.forEach(function(email){emailstring +=email+","})
+  console.log(emailstring)
 
   var form = FormApp.openById(formid)
   time = e.parameters.time;
   hoursoffset = parseInt(Utilities.formatDate(now, userTimeZone, "hh"))-parseInt(Utilities.formatDate(now, "GMT", "hh"));
-  console.log(hoursoffset)
 
   starttime = new Date(time + now.getFullYear());
   console.log(starttime);
@@ -738,7 +738,7 @@ function bookMeeting(e){
   console.log(endtime);
   CalendarApp.getDefaultCalendar().createEvent(e.formInput.titlefield,starttime,endtime, 
     {location:"zoom", guests:emailstring, sendInvites:true}); // location for now is always set to zoom
-  console.log(e);
+  return closeDoodlePoll(e)
 }
 
 function closeDoodlePoll(e){
