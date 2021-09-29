@@ -1,6 +1,7 @@
 // Begin by building the root card with 1st section 'General Info'.
 function doodlePoll(e) {
   items = getPropertyDPManaging();
+  console.log(items)
   if (items.length == 0){return createDoodlePoll(e);}
   var button1 = CardService.newTextButton()
       .setText('Create new doodle poll')
@@ -25,7 +26,7 @@ function doodlePoll(e) {
     rows.forEach(function(value){
       var button = CardService.newTextButton().setText("- "+value)
         .setOnClickAction(CardService.newAction()
-        .setFunctionName('bookMeetingCard').setParameters({time: value, formid: formid}));
+        .setFunctionName('bookMeeting').setParameters({time: value, formid: formid}));
       buttonSet.addButton(button);})
     
     var text1 = CardService.newTextParagraph().setText("View poll results: <a href="+form.getSummaryUrl()+">"+form.getSummaryUrl()+"</a> \n\nClick time to close poll and book meeting:");
@@ -52,10 +53,6 @@ function createDoodlePoll(e){
     .addSection(generalInfoSection())
     .setFixedFooter(buildPreviousAndRootButtonSet());
   return card.build();
-}
-
-function manageDoodlePollCard(e){
-  
 }
 
 // -----------------------------------------------------------------------------------
@@ -660,7 +657,56 @@ function onFormResponse(e){
 }
 
 function bookMeetingCard(e){
-  // this will eventually have to change to accommodate meeting duration. for now set to 30 minutes
+  // buttons do not work yet 
+  formid = e.parameters.formid;
+  var storedpolls = getPropertyDPManaging();
+  var emails = []; // set to 30 minutes by default
+  storedpolls.forEach(function(array) {if (array[0]== formid) emails = array[2]})
+  console.log(emails)
+  emails = ["22721679@student.uwa.edu.au", "lilyfel3@gmail.com"] // testing
+  var form = FormApp.openById(formid)
+  time = e.parameters.time;
+
+  var action = CardService.newAction()
+    .setFunctionName('bookMeeting')
+    .setParameters({time: e.parameters.time, formid: e.parameters.formid});
+  var bookButton = CardService.newTextButton()
+    .setText('Confirm Meeting and Close Poll')
+    .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+    .setOnClickAction(action);
+
+  emailstring = "";
+  emails.forEach(function(address) {emailstring +=address+" "})
+
+  var emailtext = CardService.newTextParagraph().setText("Invited: "+emailstring);
+  var emailField = CardService.newTextInput().setFieldName("Addemails").setTitle("Add emails");
+  var addemailsubmit = CardService.newTextButton().setText('Add Email')
+    .setOnClickAction(CardService.newAction().setFunctionName("bookMeetingAddEmail"));
+  var invitetext = CardService.newTextParagraph().setText("\nEmail Invitation:");
+  var titlefield = CardService.newTextInput().setFieldName("titlefield").setTitle("Title").setValue(form.getItems()[0].getTitle());
+  var bodyfield = CardService.newTextInput().setFieldName("bodyfield").setTitle("Body").setMultiline(true).setValue("\n\n\n");
+
+  // Card Section for Snooze components, each add widget calls a function that creates the widget
+  var section = CardService.newCardSection()
+    .setHeader("Book "+form.getItems()[0].getTitle()+" for "+time)
+    .addWidget(emailtext)
+    .addWidget(emailField)
+    .addWidget(addemailsubmit)
+    .addWidget(invitetext)
+    .addWidget(titlefield)
+    .addWidget(bodyfield)
+    .addWidget(bookButton);
+  
+  var footer = buildPreviousAndRootButtonSet();
+
+  // Card which includes the Snooze components only
+  var card = CardService.newCardBuilder()
+    .addSection(section)
+    .setFixedFooter(footer);
+  return card.build();
+}
+
+function bookMeeting(e){
   // also will need to include additional email addresses
   formid = e.parameters.formid;
   var storedpolls = getPropertyDPManaging();
