@@ -663,12 +663,11 @@ function bookMeetingCard(e){
   var emails = [];
   storedpolls.forEach(function(array) {if (array[0]== formid) emails = array[2]})
   console.log(emails)
-  emails.push("test@example.com") // testing
   var form = FormApp.openById(formid)
   time = e.parameters.time;
 
   var action = CardService.newAction()
-    .setFunctionName('bookMeeting')
+    .setFunctionName('bookMeetingCard')
     .setParameters({time: e.parameters.time, formid: e.parameters.formid});
   var bookButton = CardService.newTextButton()
     .setText('Confirm Meeting and Close Poll')
@@ -678,24 +677,23 @@ function bookMeetingCard(e){
   emailstring = "";
   emails.forEach(function(address) {emailstring +=address+" "})
 
+  var invitetext = CardService.newTextParagraph().setText("Book "+form.getItems()[0].getTitle()+" for "+time+"\nEmail Invitation:");
   var emailtext = CardService.newTextParagraph().setText("Invited: "+emailstring);
   var emailField = CardService.newTextInput().setFieldName("addemails").setTitle("Add emails");
   var addemailsubmit = CardService.newTextButton().setText('Add Email')
     .setOnClickAction(CardService.newAction().setFunctionName("bookMeetingAddEmail")
     .setParameters({time: e.parameters.time, formid: e.parameters.formid}));
-  var invitetext = CardService.newTextParagraph().setText("\nEmail Invitation:");
   var titlefield = CardService.newTextInput().setFieldName("titlefield").setTitle("Title").setValue(form.getItems()[0].getTitle());
-  var bodyfield = CardService.newTextInput().setFieldName("bodyfield").setTitle("Body").setMultiline(true).setValue("\n\n\n");
+  //var locationfield = CardService.newTextInput().setFieldName("locationfield").setTitle("Location");
 
   // Card Section for Snooze components, each add widget calls a function that creates the widget
   var section = CardService.newCardSection()
-    .setHeader("Book "+form.getItems()[0].getTitle()+" for "+time)
+    .setHeader("Book Meeting")
+    .addWidget(invitetext)
+    .addWidget(titlefield)
     .addWidget(emailtext)
     .addWidget(emailField)
     .addWidget(addemailsubmit)
-    .addWidget(invitetext)
-    .addWidget(titlefield)
-    .addWidget(bodyfield)
     .addWidget(bookButton);
   
   var footer = buildPreviousAndRootButtonSet();
@@ -708,24 +706,24 @@ function bookMeetingCard(e){
 }
 
 function bookMeetingAddEmail(e){
-  console.log(e);
   var scriptProperties = PropertiesService.getUserProperties();
   formid = e.parameters.formid;
   var storedpolls = getPropertyDPManaging();
-  var emails = [];
   storedpolls.forEach(function(array) {if (array[0]== formid) array[2].push(e.formInput.addemails)});
-  console.log(storedpolls)
   scriptProperties.setProperty("dpmanaging", JSON.stringify(storedpolls));
   return bookMeetingCard(e)
 }
 
 function bookMeeting(e){
-  // also will need to include additional email addresses
   formid = e.parameters.formid;
   var storedpolls = getPropertyDPManaging();
   var meetinglength = 30; // set to 30 minutes by default
-  storedpolls.forEach(function(array) {if (array[0]== formid) meetinglength = array[1]})
+  var emails = [];
+  storedpolls.forEach(function(array) {if (array[0]== formid) 
+  {meetinglength = array[1]; emails = array[2];}})
   console.log(meetinglength)
+  emailstring = "";
+  emails.forEach(function(email){emailstring +=email+","})
 
   var form = FormApp.openById(formid)
   time = e.parameters.time;
@@ -738,8 +736,9 @@ function bookMeeting(e){
   endtime = new Date(starttime.getTime()+(meetinglength * 60 * 1000)); // add 30 minutes in milliseconds
   console.log(starttime);
   console.log(endtime);
-  CalendarApp.getDefaultCalendar().createEvent(form.getItems()[0].getTitle(),starttime,endtime);
-  return closeDoodlePoll(e);
+  CalendarApp.getDefaultCalendar().createEvent(e.formInput.titlefield,starttime,endtime, 
+    {location:"zoom", guests:emailstring, sendInvites:true}); // location for now is always set to zoom
+  console.log(e);
 }
 
 function closeDoodlePoll(e){
