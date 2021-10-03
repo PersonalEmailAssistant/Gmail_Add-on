@@ -197,7 +197,7 @@ function buildSearchCard_(e, opt_error) {
   .addWidget(buttonSetDoodlePoll)
   .addWidget(message)
   .setCollapsible(true)
-  .setNumUncollapsibleWidgets(5);
+  .setNumUncollapsibleWidgets(6);
 
   if (opt_error) {
     var message = CardService.newTextParagraph()
