@@ -666,7 +666,8 @@ function bookMeetingCard(e){
   formid = e.parameters.formid;
   var storedpolls = getPropertyDPManaging();
   var emails = [];
-  storedpolls.forEach(function(array) {if (array[0]== formid) emails = array[2]})
+  var location = ""
+  storedpolls.forEach(function(array) {if (array[0]== formid) emails = array[2]; location=array[3]})
   console.log(emails)
   var form = FormApp.openById(formid)
   time = e.parameters.time;
@@ -689,6 +690,7 @@ function bookMeetingCard(e){
     .setOnClickAction(CardService.newAction().setFunctionName("bookMeetingAddEmail")
     .setParameters({time: e.parameters.time, formid: e.parameters.formid}));
   var titlefield = CardService.newTextInput().setFieldName("titlefield").setTitle("Title").setValue(form.getItems()[0].getTitle());
+  var locationfield = CardService.newTextInput().setFieldName("locationfield").setTitle("Location").setValue(location);
   //var locationfield = CardService.newTextInput().setFieldName("locationfield").setTitle("Location");
 
   // Card Section for Snooze components, each add widget calls a function that creates the widget
@@ -699,6 +701,7 @@ function bookMeetingCard(e){
     .addWidget(emailtext)
     .addWidget(emailField)
     .addWidget(addemailsubmit)
+    .addWidget(locationfield)
     .addWidget(bookButton);
   
   var footer = buildPreviousAndRootButtonSet();
@@ -716,26 +719,28 @@ function bookMeetingAddEmail(e){
 }
 
 function meetingAddEmail(formid, email){
-  var scriptProperties = PropertiesService.getUserProperties();
-  var storedpolls = getPropertyDPManaging();
-  storedpolls.forEach(function(array) {if (array[0]== formid) array[2].push(email)});
-  scriptProperties.setProperty("dpmanaging", JSON.stringify(storedpolls));
+  if (email != null){
+    var scriptProperties = PropertiesService.getUserProperties();
+    var storedpolls = getPropertyDPManaging();
+    storedpolls.forEach(function(array) {if (array[0]== formid) array[2].push(email)});
+    scriptProperties.setProperty("dpmanaging", JSON.stringify(storedpolls));
+  }
 }
 
 function bookMeeting(e){
+  console.log(e)
   formid = e.parameters.formid;
   var storedpolls = getPropertyDPManaging();
-  var meetinglength = 30; // set defaults
+  var meetinglength = 30; // set to 30 minutes by default
   var emails = [];
-  storedlocation = "TBC"
+  storedlocation = e.formInput.locationfield
+
   storedpolls.forEach(function(array) {if (array[0]== formid) 
-  {meetinglength = array[1]; emails = array[2]; storedlocation = array[3]}})
-  console.log(meetinglength)
+  {meetinglength = array[1]; emails = array[2];}})
   emailstring = "";
   emails.forEach(function(email){emailstring +=email+","})
   console.log(emailstring)
 
-  var form = FormApp.openById(formid)
   time = e.parameters.time;
   hoursoffset = parseInt(Utilities.formatDate(now, userTimeZone, "hh"))-parseInt(Utilities.formatDate(now, "GMT", "hh"));
 
