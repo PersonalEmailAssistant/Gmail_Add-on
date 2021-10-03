@@ -62,12 +62,22 @@ function generalSection(e) {
     .setHeader('Map Link')
     .addWidget(locationInput())
     .addWidget(positionInput())
-    .addWidget(massageInput())
     .addWidget(inserting())
     .addWidget(addLocationButton())
     .addWidget(deleteLocationButton())
     ;
 
+  if (checkSideBarOrComposing() == false) {
+    generalSection = CardService.newCardSection()
+    .setHeader('Map Link')
+    .addWidget(locationInput())
+    .addWidget(positionInput())
+    .addWidget(massageInput())
+    .addWidget(inserting())
+    .addWidget(addLocationButton())
+    .addWidget(deleteLocationButton())
+    ;
+  }
   return generalSection;
 }
 
