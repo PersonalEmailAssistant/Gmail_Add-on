@@ -6,7 +6,7 @@ function doodlePoll(e) {
   var button1 = CardService.newTextButton()
       .setText('Create new doodle poll')
       .setOnClickAction(CardService.newAction()
-        .setFunctionName('createDoodlePoll'))
+      .setFunctionName('createDoodlePoll'))
       .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
 
   var section = CardService.newCardSection()
@@ -469,11 +469,16 @@ function GeneralInfoCardUpdateDP(e) {
   else meetingLengthDPvar = null;
   notesDPvar = e.formInput.notesDPvalue;
   locationDPvar = e.formInput.locationDPvalue;
-  otherLocationDPvar = e.formInput.otherLocationDPvalue;
+  //otherLocationDPvar = e.formInput.otherLocationDPvalue;
+
+  console.log(locationDPvar)
+  console.log(otherLocationDPvar)
+  if (locationDPvar == "Other"){locationDPvar=e.formInput.otherLocationDPvalue};
 
   var scriptProperties = CacheService.getUserCache();
   scriptProperties.put("dptitle",e.formInput.titleDPvalue);
   scriptProperties.put("dplength",e.formInput.meetingLengthDPvalue);
+  scriptProperties.put("dplocation",locationDPvar);
 
   var updatedSection = generalInfoSection();
 
@@ -586,6 +591,7 @@ function completePoll (e) {
   var scriptProperties = CacheService.getUserCache();
   var title = scriptProperties.get("dptitle");
   var meetinglength = scriptProperties.get("dplength");
+  var meetinglocation = scriptProperties.get("dplocation");
 
   // Title / Description
   var form = FormApp.create(title);
@@ -634,7 +640,7 @@ function completePoll (e) {
   console.log(form.getPublishedUrl())
   ScriptApp.newTrigger("onFormResponse").forForm(form).onFormSubmit().create();
   getPropertyDPManaging();
-  addNewDoodlePoll(form.getId(), meetinglength);
+  addNewDoodlePoll(form.getId(), meetinglength, meetinglocation);
 
   var text = CardService.newTextParagraph().setText("Doodle poll link: <a href="+form.getPublishedUrl()+">"+form.getPublishedUrl()+"</a>");
   var section = CardService.newCardSection()
@@ -649,15 +655,14 @@ function completePoll (e) {
 }
 
 function onFormResponse(e){
-  console.log(e)
-  //console.log(e.response.getItemResponses()[0].getResponse())
-  console.log(e.source.getSummaryUrl())
+  console.log(e.response.getRespondentEmail())
+  meetingAddEmail(e.source.getId(), e.response.getRespondentEmail())
+  //console.log(e.response.getItemResponses()[1].getResponse())
   emailBody = "There has been a new response \nView poll results at: " + e.source.getSummaryUrl()
   MailApp.sendEmail(Session.getActiveUser().getEmail(), "New form response", emailBody);
 }
 
-function bookMeetingCard(e){
-  // buttons do not work yet 
+function bookMeetingCard(e){ 
   formid = e.parameters.formid;
   var storedpolls = getPropertyDPManaging();
   var emails = [];
@@ -705,22 +710,26 @@ function bookMeetingCard(e){
   return card.build();
 }
 
-function bookMeetingAddEmail(e){
-  var scriptProperties = PropertiesService.getUserProperties();
-  formid = e.parameters.formid;
-  var storedpolls = getPropertyDPManaging();
-  storedpolls.forEach(function(array) {if (array[0]== formid) array[2].push(e.formInput.addemails)});
-  scriptProperties.setProperty("dpmanaging", JSON.stringify(storedpolls));
+function bookMeetingAddEmail(e){ 
+  meetingAddEmail(e.parameters.formid, e.formInput.addemails)
   return bookMeetingCard(e)
+}
+
+function meetingAddEmail(formid, email){
+  var scriptProperties = PropertiesService.getUserProperties();
+  var storedpolls = getPropertyDPManaging();
+  storedpolls.forEach(function(array) {if (array[0]== formid) array[2].push(email)});
+  scriptProperties.setProperty("dpmanaging", JSON.stringify(storedpolls));
 }
 
 function bookMeeting(e){
   formid = e.parameters.formid;
   var storedpolls = getPropertyDPManaging();
-  var meetinglength = 30; // set to 30 minutes by default
+  var meetinglength = 30; // set defaults
   var emails = [];
+  storedlocation = "TBC"
   storedpolls.forEach(function(array) {if (array[0]== formid) 
-  {meetinglength = array[1]; emails = array[2];}})
+  {meetinglength = array[1]; emails = array[2]; storedlocation = array[3]}})
   console.log(meetinglength)
   emailstring = "";
   emails.forEach(function(email){emailstring +=email+","})
@@ -737,7 +746,7 @@ function bookMeeting(e){
   console.log(starttime);
   console.log(endtime);
   CalendarApp.getDefaultCalendar().createEvent(e.formInput.titlefield,starttime,endtime, 
-    {location:"zoom", guests:emailstring, sendInvites:true}); // location for now is always set to zoom
+    {location:storedlocation, guests:emailstring, sendInvites:true}); // location for now is always set to zoom
   return closeDoodlePoll(e)
 }
 

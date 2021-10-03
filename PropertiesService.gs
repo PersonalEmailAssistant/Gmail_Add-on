@@ -61,7 +61,7 @@ function getPropertyDPManaging(){
   var scriptProperties = PropertiesService.getUserProperties();
   dpmanaging = JSON.parse(scriptProperties.getProperty("dpmanaging"));
   console.log(dpmanaging);
-  if (dpmanaging===null || (dpmanaging[0] != undefined && dpmanaging[0].length!=3)){
+  if (dpmanaging===null || (dpmanaging[0] != undefined && dpmanaging[0].length!=4)){
     var defaultdpdateoptions = [];
     scriptProperties.setProperty("dpmanaging", JSON.stringify(defaultdpdateoptions));
   }
@@ -270,7 +270,7 @@ function addQuickLocationButton(e){
   return manageCustomButtonsCard(e);
 }
 
-function addNewDoodlePoll(formid, meetinglength){addPropertiesServiceItem("dpmanaging", [formid, meetinglength, []])}
+function addNewDoodlePoll(formid, meetinglength, location){addPropertiesServiceItem("dpmanaging", [formid, meetinglength, [], location])}
 
 function addPropertiesServiceItem(name, item){
   var scriptProperties = PropertiesService.getUserProperties();
