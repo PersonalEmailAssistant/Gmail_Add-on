@@ -39,16 +39,21 @@ function easterEgg(e) {
 }
 
 /**
+ * Renders the homepage
+ */
+function onHomePage(e) {
+  var card = buildSearchCard_(e, true);
+  return [card];
+}
+
+/**
 * Renders the contextual interface for a Gmail message.
 *
 * @param {Object} event - current add-on event
 * @return {Card[]} Card(s) to display
 */
 function onGmailMessageSelected(e) {
-  var scriptProperties = PropertiesService.getUserProperties();
-  scriptProperties.setProperty("selectedrecipients", " ");
-
-  var card = buildSearchCard_(e);
+  var card = buildSearchCard_(e, false);
   return [card];
 }
 
@@ -59,7 +64,7 @@ function onGmailMessageSelected(e) {
 * @return {Card[]} Card(s) to display
 */
 function onCalendarEventOpen(e) {
-  var card = buildSearchCard_(e, "No functions found for current event.");
+  var card = buildSearchCard_(e, false, "No functions found for current event.");
   return [card];
 }
 
@@ -80,8 +85,9 @@ function onSearch(event) {
 
   var query =  event.formInputs.query[0];
   var checking = '';//if no function found, checking enable the process of pushing no match found notification
+  var isOnhomePage = event.parameters.isOnhomePage;//can't open snooze if no email has been opened
 
-    if (query.replace(" ", "").localeCompare('snooze', undefined, {sensitivity: 'base' }) === 0) {
+  if (query.replace(" ", "").localeCompare('snooze', undefined, {sensitivity: 'base' }) === 0 && isOnhomePage == 'false') {
     var card = onGmailMessage(event)
     var nav = CardService.newNavigation().pushCard(card);
     return CardService.newActionResponseBuilder()
@@ -113,23 +119,40 @@ function onSearch(event) {
 /**
 * Builds the search interface for looking up functions.
 *
+* @param {isOnHomepage} - a boolean flag to determine whether on gmail homepage or not
 * @param {string} opt_error - Optional message to include (typically when
 *    contextual search failed.)
 * @return {Card} Card to display
 */
-function buildSearchCard_(e, opt_error) {
-  
-  var searchField = CardService.newTextInput()
-  .setFieldName("query")
-  .setSuggestions(CardService.newSuggestions()
-    .addSuggestion('Snooze')
-    .addSuggestion('Map link')
-    .addSuggestion('Doodle poll'))
-  .setHint("Name of functions")
-  .setTitle("What can I do for you today?");
+function buildSearchCard_(e, isOnHomepage, opt_error) {
+
+  if (isOnHomepage == true) {
+    var searchField = CardService.newTextInput()
+    .setFieldName("query")
+    .setSuggestions(CardService.newSuggestions()
+      .addSuggestion('Map link')
+      .addSuggestion('Doodle poll'))
+    .setHint("Name of functions")
+    .setTitle("What can I do for you today?"); 
+  } else {
+    var searchField = CardService.newTextInput()
+    .setFieldName("query")
+    .setSuggestions(CardService.newSuggestions()
+      .addSuggestion('Snooze')
+      .addSuggestion('Map link')
+      .addSuggestion('Doodle poll'))
+    .setHint("Name of functions")
+    .setTitle("What can I do for you today?");
+  }
+
+  var onSearchInput = {isOnhomePage: 'false'}
+  if (isOnHomepage == true) {
+    onSearchInput = {isOnhomePage: 'true'}
+  }
 
   var onSubmitAction = CardService.newAction()
   .setFunctionName("onSearch")
+  .setParameters(onSearchInput)
   .setLoadIndicator(CardService.LoadIndicator.SPINNER);
 
   var banner = CardService.newImage()
@@ -137,7 +160,8 @@ function buildSearchCard_(e, opt_error) {
 
   var message = CardService.newTextParagraph()
       .setText("Can't find the function you are looking for?" +
-                "Head to Calendar/Gmail to see more!")
+                "Select/Open an email " + 
+                "or head to Calendar/Gmail to see more!")
 
   var info = messageChooser(e);
 
@@ -187,17 +211,28 @@ function buildSearchCard_(e, opt_error) {
               .setFunctionName('onGmailMessage'))
       );
 
-
-  var section = CardService.newCardSection()
-  .addWidget(banner)
-  .addWidget(searchField)
-  .addWidget(submitButton)
-  .addWidget(buttonSetSnooze)
-  .addWidget(buttonSetMapLink)
-  .addWidget(buttonSetDoodlePoll)
-  .addWidget(message)
-  .setCollapsible(true)
-  .setNumUncollapsibleWidgets(6);
+  if (isOnHomepage == true) {
+    var section = CardService.newCardSection()
+    .addWidget(banner)
+    .addWidget(searchField)
+    .addWidget(submitButton)
+    .addWidget(buttonSetMapLink)
+    .addWidget(buttonSetDoodlePoll)
+    .addWidget(message)
+    .setCollapsible(true)
+    .setNumUncollapsibleWidgets(6);
+  } else {
+    var section = CardService.newCardSection()
+    .addWidget(banner)
+    .addWidget(searchField)
+    .addWidget(submitButton)
+    .addWidget(buttonSetSnooze)
+    .addWidget(buttonSetMapLink)
+    .addWidget(buttonSetDoodlePoll)
+    .addWidget(message)
+    .setCollapsible(true)
+    .setNumUncollapsibleWidgets(6);
+  }
 
   if (opt_error) {
     var message = CardService.newTextParagraph()
