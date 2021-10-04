@@ -1,3 +1,4 @@
+
 //------------------------------- MANAGE PROPERTIESSERVICE STORAGE -------------------------------------
 
 function checkPropertymap(){
@@ -256,10 +257,12 @@ function addNewRecipientGroup(e){
 
 function addNewQuickButton(e){
   console.log(e.formInput.addquickbuttoninput);
-  if (e.formInput.addquickbuttoninput == undefined) return;
-  checkPropertyquicksnooze();
-  addPropertiesServiceItem("quicksnooze", [e.formInput.addquickbuttoninput + " Hours", ""+e.formInput.addquickbuttoninput])
-  return onGmailMessage(e);
+  if (e.formInput.addquickbuttoninput > 0){ 
+    checkPropertyquicksnooze();
+    addPropertiesServiceItem("quicksnooze", [e.formInput.addquickbuttoninput + " Hours", ""+e.formInput.addquickbuttoninput])
+    return onGmailMessage(e);
+  }
+  return;
 }
 
 function addQuickLocationButton(e){
