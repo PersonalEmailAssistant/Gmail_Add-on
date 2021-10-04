@@ -1,3 +1,151 @@
+/**
+ * Callback for rendering the card for a specific Gmail message. Only visable after the user has selected an email
+ * @param {Object} e The event object.
+ * @return {CardService.Card} The card to show to the user.
+ */
+function onGmailMessage(e){
+  var action = CardService.newAction()
+    .setFunctionName('snoozeTimer')
+    .setParameters({id: e.messageMetadata.messageId});
+  var snoozeButton = CardService.newTextButton()
+    .setText('Snooze Email')
+    .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+    .setOnClickAction(action);
+
+  // Card Section for Snooze components, each add widget calls a function that creates the widget
+  var snoozeSection = CardService.newCardSection()
+    .setHeader("Snooze Email")
+    .addWidget(snoozeQuickButtons())
+    .addWidget(snoozeDateTimePicker())
+    .addWidget(CardService.newButtonSet().addButton(snoozeButton))
+    .addWidget(snoozeAddRecipients())
+    .addWidget(emailSnoozeRecipientGroupsButtons())
+    .addWidget(CardService.newTextParagraph().setText("\n\n"))
+    .addWidget(getManangeCustomButtons());
+  
+  var footer = buildPreviousAndRootButtonSet();
+
+  // Card which includes the Snooze components only
+  var card = CardService.newCardBuilder()
+    .addSection(snoozeSection)
+    .setFixedFooter(footer);
+
+  return card.build();
+}
+
+/**
+ * Callback for rendering the card for a specific Gmail message. Only visable after the user has selected an email
+ * @param {Object} e The event object.
+ * @return {CardService.Card} The card to show to the user.
+ */
+function updateCard(e) {
+  console.log(e)
+
+  var selectedSnoozeTime = e.formInput.date_field.msSinceEpoch;
+  snoozeUntil = new Date(selectedSnoozeTime);
+
+  // Button Actions
+  var action = CardService.newAction()
+      .setFunctionName('snoozeTimer')
+      .setParameters({id: e.messageMetadata.messageId});
+  var noAction = CardService.newAction()
+      .setFunctionName('noAction');
+
+  // Button Renders
+  var snoozeButton = CardService.newTextButton()
+    .setText('Snooze Email')
+    .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+    .setOnClickAction(action);
+  var invalidButton = CardService.newTextButton()
+    .setText('Enter Valid Time')
+    .setTextButtonStyle(CardService.TextButtonStyle.TEXT)
+    .setOnClickAction(noAction);
+
+  var btnSet = CardService.newButtonSet();
+  var section = CardService.newCardSection()
+    .setHeader("Snooze Email")
+    .addWidget(snoozeQuickButtons())
+    .addWidget(snoozeDateTimePicker());
+
+  if (now.getTime() > snoozeUntil.getTime()) {
+    section.addWidget(btnSet.addButton(invalidButton));
+  } else {
+    section.addWidget(btnSet.addButton(snoozeButton));
+  }
+
+  section.addWidget(snoozeAddRecipients(e.formInput.snoozerecipients));
+  section.addWidget(emailSnoozeRecipientGroupsButtons());
+  section.addWidget(getManangeCustomButtons());
+
+  var card = CardService.newCardBuilder()
+    .addSection(section);
+
+  return CardService.newNavigation().updateCard(card.build());
+
+}
+
+
+//------------------------------- SNOOZE WIDGETS -------------------------------------
+
+/**
+ * Callback for creating the Snooze Quick Button widgets. Each button is a quick
+ * shortcut to common snooze times
+ * @return {CardService.Card} The button set containing each Snooze Quick Button
+ */
+function snoozeQuickButtons() {
+  var scriptProperties = PropertiesService.getUserProperties();
+  checkPropertyquicksnooze();
+  var quicksnoozetimes = JSON.parse(scriptProperties.getProperty("quicksnooze"));
+
+  var snoozeButtonSet = CardService.newButtonSet();
+
+  quicksnoozetimes.forEach(function(value) {
+    console.log(value[1]);
+    var savedaction = CardService.newAction()
+    .setFunctionName('quickSnoozeButtons')
+    .setParameters({hours:value[1]});
+    var mapButton = CardService.newTextButton()
+      .setText(value[0])
+      .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+      .setOnClickAction(savedaction);
+    snoozeButtonSet.addButton(mapButton);
+  });
+
+  return snoozeButtonSet;
+}
+
+/**
+ * Callback for creating the Snooze Date Picker widget.
+ * @return {CardService.Card} The Date Picker widget
+ */
+function snoozeDateTimePicker() {
+  var snoozeDateTimePicker = CardService.newDateTimePicker()
+    .setTitle("Enter the date to snooze until.")
+    .setFieldName("date_field")
+    .setValueInMsSinceEpoch(snoozeUntil.getTime())
+    .setOnChangeAction(CardService.newAction()
+      .setFunctionName("updateCard"));
+
+  return snoozeDateTimePicker;
+}
+
+function snoozeAddRecipients(recipients){
+  console.log(recipients)
+  checkPropertySelectedSnoozeRecipients();
+  var scriptProperties = PropertiesService.getUserProperties();
+  var selectedrecipients = scriptProperties.getProperty("selectedrecipients");
+  if (recipients != null){
+    if (recipients.includes(selectedrecipients)) selectedrecipients = recipients
+    else selectedrecipients = recipients + selectedrecipients
+  } 
+  var addrecipients = CardService.newTextInput()
+    .setFieldName("snoozerecipients")
+    .setTitle("Include Additional Recipients")
+    .setMultiline(true)
+    .setValue(selectedrecipients);
+  return addrecipients;
+}
+
 function snoozeTimer(e){
   var thread = GmailApp.getThreadById(e.gmail.threadId);
   var label = GmailApp.getUserLabelByName("Snoozed");
@@ -72,5 +220,4 @@ function buttonSnoozeTimeChange(e, hours){
  * function, with the amount of hours
  */
 function quickSnoozeButtons(e){return buttonSnoozeTimeChange(e, +e.parameters.hours);}
-
 
