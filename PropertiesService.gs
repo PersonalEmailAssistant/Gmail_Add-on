@@ -22,8 +22,9 @@ function checkPropertyquicksnooze(){
 
 function checkPropertyrecipientgroups(){
   var scriptProperties = PropertiesService.getUserProperties();
-  if (scriptProperties.getProperty("recipientgroups")===null){
-    scriptProperties.setProperty("recipientgroups", JSON.stringify([["test","test@example.com, test2@example.com"]]));// temp email addresses
+  recipients = JSON.parse(scriptProperties.getProperty("recipientgroups"));
+  if (recipients === null || recipients[0][1] == "test@example.com, test2@example.com"){
+    scriptProperties.setProperty("recipientgroups", JSON.stringify([]));
   }
 }
 
