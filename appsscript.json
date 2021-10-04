@@ -35,7 +35,7 @@
   "runtimeVersion": "V8",
   "addOns": {
     "common": {
-      "name": "Robby",
+      "name": "Robbie",
       "logoUrl": "https://static.wikia.nocookie.net/p__/images/9/95/Robby_the_Robot01.png/revision/latest/top-crop/width/360/height/360?cb=20201228181530&path-prefix=protagonist",
       "useLocaleFromApp": true,
       "layoutProperties": {
@@ -43,7 +43,8 @@
         "secondaryColor": "#2196F3"
       },
       "homepageTrigger": {
-        "enabled": false
+        "runFunction": "onHomePage",
+        "enabled": true
       },
       "universalActions": [{
         "label": "Feedback",
