@@ -22,18 +22,22 @@ function getPropertyquicksnooze(){
   return quicksnooze
 }
 
-function checkPropertyrecipientgroups(){
+function getPropertyrecipientgroups(){
   var scriptProperties = PropertiesService.getUserProperties();
-  if (scriptProperties.getProperty("recipientgroups") == null ){
+  recipientgroups = JSON.parse(scriptProperties.getProperty("recipientgroups"))
+  if (recipientgroups == null ){
     scriptProperties.setProperty("recipientgroups", JSON.stringify([]));
   }
+  return recipientgroups
 }
 
-function checkPropertySelectedSnoozeRecipients(){
+function getPropertySelectedSnoozeRecipients(){
   var scriptProperties = PropertiesService.getUserProperties();
-  if (scriptProperties.getProperty("selectedrecipients")===null){
+  selectedrecipients = JSON.parse(scriptProperties.getProperty("selectedrecipients"))
+  if (selectedrecipients===null){
     scriptProperties.setProperty("selectedrecipients", " ");
   }
+  return selectedrecipients
 }
 
 function checkPropertyDPLocation(){
@@ -95,8 +99,7 @@ function manageCustomButtonsCard(){
   var scriptProperties = PropertiesService.getUserProperties();
 
   //// snooze email buttons
-  checkPropertyquicksnooze();
-  var quicksnoozetimes = JSON.parse(scriptProperties.getProperty("quicksnooze"));
+  var quicksnoozetimes = getPropertyquicksnooze();
   var snoozeButtonSet = CardService.newButtonSet();
 
   quicksnoozetimes.forEach(function(value) {
@@ -251,17 +254,17 @@ function addNewRecipientGroup(e){
   var name = e.formInput.recipientgroupnameinput;
   var addresses = e.formInput.recipientgroupaddressesinput;
   if (name == undefined || addresses == undefined) return;
-  checkPropertyrecipientgroups();
+  getPropertyrecipientgroups();
   addPropertiesServiceItem("recipientgroups", [name, addresses])
-  return onGmailMessage(e);
+  return snoozeEmailCard(e);
 }
 
 function addNewQuickButton(e){
   console.log(e.formInput.addquickbuttoninput);
   if (e.formInput.addquickbuttoninput > 0){ 
-    checkPropertyquicksnooze();
+    getPropertyquicksnooze();
     addPropertiesServiceItem("quicksnooze", [e.formInput.addquickbuttoninput + " Hours", ""+e.formInput.addquickbuttoninput])
-    return onGmailMessage(e);
+    return snoozeEmailCard(e);
   }
   return;
 }
