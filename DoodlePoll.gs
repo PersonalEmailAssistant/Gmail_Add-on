@@ -21,14 +21,14 @@ function doodlePoll(e) {
     formid = formarray[0]
     section = CardService.newCardSection();
     form = FormApp.openById(formid);
-    rows = form.getItems()[1].asGridItem().getRows();
+    rows = form.getItems()[0].asGridItem().getRows();
     buttonSet = CardService.newButtonSet();
     rows.forEach(function(value){
       var button = CardService.newTextButton().setText("- "+value)
         .setOnClickAction(CardService.newAction()
         .setFunctionName('bookMeetingCard').setParameters({time: value, formid: formid}));
       buttonSet.addButton(button);})
-    
+
     var text1 = CardService.newTextParagraph().setText("View poll results: <a href="+form.getSummaryUrl()+">"+form.getSummaryUrl()+"</a> \n\nClick time to close poll and book meeting:");
     var text2 = CardService.newTextParagraph().setText("Or close poll without booking meeting: ")
     var button2 = CardService.newTextButton().setText("Close poll")
@@ -67,7 +67,7 @@ var otherLocationDPvar;
 var notesDPvar;
 
 // Section 2
-var dateUsedDP;
+var dateUsedDP = true;
 
 // -----------------------------------------------------------------------------------
 // ---------------------------- BASE DOODLE POLL SECTIONS ----------------------------
@@ -91,10 +91,18 @@ function generalInfoSection(e) {
 
 // 2/3 SCHEDULING
 function schedulingSection(e) {
+
+
   var schedulingSection = CardService.newCardSection()
     .setHeader("Step 2 of 3: Scheduling Options")
     .addWidget(headerDP2())
-    .addWidget(schedulingButtons());
+    .addWidget(schedulingButtons())
+    console.log(dateUsedDP)
+    if (dateUsedDP) {
+      schedulingSection.addWidget(dateSelectorDP())
+        .addWidget(addDateOptionButtonDP());
+    }
+
 
   return schedulingSection;
 }
@@ -131,7 +139,8 @@ function pollSettingsSection(e) {
 function headerDP1(e) {
   var decoratedText = CardService.newDecoratedText()
     .setText("What's the Occasion?")
-    .setText("Title Required to Continue.");
+    .setText("Title and Meeting Length Required to Continue.")
+    .setWrapText(true);
   return decoratedText;
 }
 
@@ -217,7 +226,7 @@ function meetingLengthDP(e) {
     .setHint("Required. Record in minutes - a 2 hour meeting is '120'.")
     .setOnChangeAction(CardService.newAction()
       .setFunctionName('GeneralInfoCardUpdateDP'));
-    
+
     if (meetingLengthDPvar != null) {
       meetingLength.setValue(meetingLengthDPvar)
     }
@@ -310,7 +319,17 @@ function dateSelectorDP(e) {
       .setFieldName("dateSelectorKey")
       .setValueInMsSinceEpoch(new Date().getTime());
 
-  return dateSelector
+  checkPropertyDPDateOptions();
+  var scriptProperties = PropertiesService.getUserProperties();
+  dateOptions = JSON.parse(scriptProperties.getProperty("dpdateoptions"));
+
+  //console.log(dateOptions)
+  //console.log(dateOptions.at(-1))
+  //if (dateOptions === null) dateSelector.setValueInMsSinceEpoch(new Date().getTime());
+  //else dateSelector.setValueInMsSinceEpoch(new Date().getTime());
+  //dateSelector.setValueInMsSinceEpoch(new Date(value[-1].msSinceEpoch).getTime());
+
+  return dateSelector;
 }
 
 function addDateOptionButtonDP(e) {
@@ -331,7 +350,7 @@ function formatDatesDP(e) {
 
   var formattedDates = [];
   dateOptions.forEach(function(value) {
-    formattedDates.push(Utilities.formatDate(new Date(value.msSinceEpoch), userTimeZone, "EEE, MMM dd, hh:mm a")); 
+    formattedDates.push(Utilities.formatDate(new Date(value.msSinceEpoch), userTimeZone, "EEE, MMM dd, hh:mm a"));
   })
   return formattedDates;
 }
@@ -341,8 +360,6 @@ function textSelectorDP(e) {
     .setTitle("New Option")
     .setFieldName("textSelectorKey")
     .setValue("");
-    //.setOnChangeAction(CardService.newAction()
-      //.setFunctionName('changeTextOptions'));
 
   return textSelector;
 }
@@ -399,7 +416,39 @@ function showTextOptionDP(e) {
   return showTextOption;
 }
 
+function removeOptionDP(e) {
 
+  var removeOption = CardService.newSelectionInput()
+    .setType(CardService.SelectionInputType.DROPDOWN)
+    .setFieldName("removeOptionDPvalue")
+    .setTitle("Remove an Option")
+
+  removeOption.addItem("","",true)
+  var scriptProperties = PropertiesService.getUserProperties();
+  if (dateUsedDP) {
+    removeOption.setOnChangeAction(CardService.newAction()
+      .setFunctionName('removeDateOption'));
+    checkPropertyDPDateOptions();
+    options = JSON.parse(scriptProperties.getProperty("dpdateoptions"));
+    options.forEach(function(value) {
+      time = new Date(value.msSinceEpoch);
+      //https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
+      timevalue = Utilities.formatDate(time, userTimeZone, "EEE, MMM dd, hh:mm a");
+      removeOption.addItem(timevalue, timevalue, false)
+    })
+  }
+  else {
+    removeOption.setOnChangeAction(CardService.newAction()
+      .setFunctionName('removeTextOption'));
+    checkPropertyDPTextOptions();
+    options = JSON.parse(scriptProperties.getProperty("dptextoptions"));
+    options.forEach(function(value) {
+      removeOption.addItem(value, value, false)
+    })
+  }
+
+  return removeOption;
+}
 
 // -------------------------- SECTION 3 - pollSettingSection -------------------------
 // https://developers.google.com/apps-script/reference/card-service/switch
@@ -505,10 +554,12 @@ function dateScheduleUpdateDP(e) {
   dateUsedDP = true;
 
   var dateScheduleSection = CardService.newCardSection()
-    .addWidget(dateSelectorDP())
-    .addWidget(addDateOptionButtonDP())
-    .addWidget(showDateOptionDP());
+    .addWidget(showDateOptionDP())
+
   var scriptProperties = PropertiesService.getUserProperties();
+  if (JSON.parse(scriptProperties.getProperty("dpdateoptions")).length >= 1) {
+    dateScheduleSection.addWidget(removeOptionDP());
+  }
   if (JSON.parse(scriptProperties.getProperty("dpdateoptions")).length >= 2) {
     dateScheduleSection.addWidget(nextButtonDP2());
   }
@@ -531,6 +582,10 @@ function textScheduleUpdateDP(e) {
     .addWidget(addTextOptionButtonDP())
     .addWidget(showTextOptionDP());
 
+  var scriptProperties = PropertiesService.getUserProperties();
+  if (JSON.parse(scriptProperties.getProperty("dptextoptions")).length >= 1) {
+    textScheduleSection.addWidget(removeOptionDP());
+  }
   if (JSON.parse(scriptProperties.getProperty("dptextoptions")).length >= 2) {
     textScheduleSection.addWidget(nextButtonDP2());
   }
@@ -561,11 +616,42 @@ function addTextOption(e) {
   return textScheduleUpdateDP();
 }
 
+function removeDateOption(e) {
+  var scriptProperties = PropertiesService.getUserProperties();
+  checkPropertyDPDateOptions();
+  dateoptions = JSON.parse(scriptProperties.getProperty("dpdateoptions"));
+  newerlist = [];
+  dateoptions.forEach(function(value) {
+    formattedValue = Utilities.formatDate(new Date(value.msSinceEpoch), userTimeZone, "EEE, MMM dd, hh:mm a");
+    if (formattedValue != e.formInput.removeOptionDPvalue) {
+      newerlist.push(value)
+    }
+  })
+  scriptProperties.setProperty("dpdateoptions", JSON.stringify(newerlist));
+  return dateScheduleUpdateDP();
+}
+
+function removeTextOption(e) {
+  var scriptProperties = PropertiesService.getUserProperties();
+  checkPropertyDPTextOptions();
+  textoptions = JSON.parse(scriptProperties.getProperty("dptextoptions"));
+  newerlist = [];
+  textoptions.forEach(function(value) {
+    formattedValue = Utilities.formatDate(new Date(value.msSinceEpoch), userTimeZone, "EEE, MMM dd, hh:mm a");
+    if (formattedValue != e.formInput.removeOptionDPvalue) {
+      newerlist.push(value)
+    }
+  })
+  scriptProperties.setProperty("dptextoptions", JSON.stringify(newerlist));
+  return dateScheduleUpdateDP();
+}
+
 // -----------------------------------------------------------------------------------
 // ------------------------------- SECTION CHANGERS -----------------------------------
 // -----------------------------------------------------------------------------------
 
 function ontoSection2 (e) {
+  dateUsedDP = true
   var card = CardService.newCardBuilder()
     .addSection(schedulingSection())
     .setFixedFooter(buildPreviousAndRootButtonSet());
@@ -586,7 +672,7 @@ function completePoll (e) {
   // somethings up with global variables because it doesnt have the stored value
   // so i am using UserCache instead
   console.log("Meeting length:");
-  console.log(meetingLengthDPvar); 
+  console.log(meetingLengthDPvar);
   ///
   var scriptProperties = CacheService.getUserCache();
   var title = scriptProperties.get("dptitle");
@@ -609,7 +695,7 @@ function completePoll (e) {
       pollItem.setChoiceValues( textOptions )
     }
   }
-  // If multiple votes are allowed
+  // If multiple votes are allowed, provide checkboxes
   else {
     var pollItem = form.addGridItem()
       .setTitle("Which meeting time suits?")
@@ -728,7 +814,6 @@ function meetingAddEmail(formid, email){
 }
 
 function bookMeeting(e){
-  console.log(e)
   formid = e.parameters.formid;
   var storedpolls = getPropertyDPManaging();
   var meetinglength = 30; // set to 30 minutes by default
@@ -737,6 +822,7 @@ function bookMeeting(e){
 
   storedpolls.forEach(function(array) {if (array[0]== formid) 
   {meetinglength = array[1]; emails = array[2];}})
+  console.log(meetinglength)
   emailstring = "";
   emails.forEach(function(email){emailstring +=email+","})
   console.log(emailstring)
