@@ -12,12 +12,14 @@ function checkPropertymap(){
   }
 }
 
-function checkPropertyquicksnooze(){
+function getPropertyquicksnooze(){
   var scriptProperties = PropertiesService.getUserProperties();
-  if (scriptProperties.getProperty("quicksnooze")===null){
-    var defaultquicksnooze = [["30 Minutes","0.5"],["2 Hours","2"],["Tomorrow","24"],["Next Week","168"]]; // time in hours
-    scriptProperties.setProperty("quicksnooze", JSON.stringify(defaultquicksnooze));
+  quicksnooze = JSON.parse(scriptProperties.getProperty("quicksnooze"));
+  if (quicksnooze===null){
+    var quicksnooze = [["30 Minutes","0.5"],["2 Hours","2"],["Tomorrow","24"],["Next Week","168"]]; // time in hours
+    scriptProperties.setProperty("quicksnooze", JSON.stringify(quicksnooze));
   }
+  return quicksnooze
 }
 
 function checkPropertyrecipientgroups(){
@@ -61,7 +63,6 @@ function checkPropertyDPDateOptions(){
 function getPropertyDPManaging(){
   var scriptProperties = PropertiesService.getUserProperties();
   dpmanaging = JSON.parse(scriptProperties.getProperty("dpmanaging"));
-  console.log(dpmanaging);
   if (dpmanaging===null || (dpmanaging[0] != undefined && dpmanaging[0].length!=4)){
     var defaultdpdateoptions = [];
     scriptProperties.setProperty("dpmanaging", JSON.stringify(defaultdpdateoptions));
