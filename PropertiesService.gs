@@ -33,7 +33,7 @@ function getPropertyrecipientgroups(){
 
 function getPropertySelectedSnoozeRecipients(){
   var scriptProperties = PropertiesService.getUserProperties();
-  selectedrecipients = JSON.parse(scriptProperties.getProperty("selectedrecipients"))
+  selectedrecipients = scriptProperties.getProperty("selectedrecipients")
   if (selectedrecipients===null){
     scriptProperties.setProperty("selectedrecipients", " ");
   }
@@ -67,7 +67,7 @@ function checkPropertyDPDateOptions(){
 function getPropertyDPManaging(){
   var scriptProperties = PropertiesService.getUserProperties();
   dpmanaging = JSON.parse(scriptProperties.getProperty("dpmanaging"));
-  if (dpmanaging===null || (dpmanaging[0] != undefined && dpmanaging[0].length!=4)){
+  if (dpmanaging===null || (dpmanaging[0] === undefined || dpmanaging[0].length!=4)){
     var defaultdpdateoptions = [];
     scriptProperties.setProperty("dpmanaging", JSON.stringify(defaultdpdateoptions));
   }

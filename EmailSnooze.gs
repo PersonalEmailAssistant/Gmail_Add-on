@@ -118,9 +118,7 @@ function snoozeDateTimePicker() {
  * @return {CardService.Card} The TextInput widget
  */
 function snoozeAddRecipients(recipients){
-  checkPropertySelectedSnoozeRecipients();
-  var scriptProperties = PropertiesService.getUserProperties();
-  var selectedrecipients = scriptProperties.getProperty("selectedrecipients");
+  var selectedrecipients = getPropertySelectedSnoozeRecipients();
   if (recipients != null){
     if (recipients.includes(selectedrecipients)) selectedrecipients = recipients
     else selectedrecipients = recipients + selectedrecipients
