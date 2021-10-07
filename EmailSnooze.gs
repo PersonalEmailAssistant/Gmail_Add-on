@@ -1,10 +1,18 @@
+//------------------------------- EMAIL SNOOZE FUNCTIONS -------------------------------------
+/** 
+ * EMAIL SNOOZE:
+ * Snoozing emails temporarily removes them from the inbox and, after a set period of time,
+ * returns them to the top of the inbox
+ * This allows users to manage their inbox by reminding them to follow up on emails that they may not
+ * initially have time to repond to at a set later date
+ */
+
 var snoozeUntil = new Date(now.getTime()+(2 * 60 * 60 * 1000)); // set default snooze time as now + 2 hours
 GmailApp.createLabel("Snoozed"); // creates gmail folder 
 
 /**
  * Callback for rendering the snooze email card
- *  Card allows users to select time to snooze current email until 
- *  and include additional recipients to recieve email
+ * Display allows users to select time to snooze current email until and include additional recipients to recieve email
  * @param {Object} e The event object.
  * @return {CardService.Card} The card to show to the user.
  */
@@ -14,6 +22,14 @@ function snoozeEmailCard(e) {
   if (e.formInput.date_field != undefined){
     snoozeUntil = new Date(e.formInput.date_field.msSinceEpoch);
   }
+
+  // text widgets to provide desciptions and instructions
+  var descriptiontxt = CardService.newTextParagraph()
+    .setText("Snoozing emails temporarily removes them from the inbox and, after a set period of time, returns them to the top of the inbox. \n\nClick a time to snooze email: ");
+  var explanationtxt = CardService.newTextParagraph()
+    .setText("\nOr choose your own time below: ")
+  var recipienttxt = CardService.newTextParagraph()
+    .setText("\n(Optional) Include additional recipients: ")
 
   // Button Actions
   // action calls snoozeTimer to create a time-based trigger
@@ -37,7 +53,9 @@ function snoozeEmailCard(e) {
   // create section to display widgets
   var section = CardService.newCardSection()
     .setHeader("Snooze Email")
+    .addWidget(descriptiontxt)
     .addWidget(snoozeQuickButtons())
+    .addWidget(explanationtxt)
     .addWidget(snoozeDateTimePicker());
 
   // check that date/time input is not in the past
@@ -48,15 +66,14 @@ function snoozeEmailCard(e) {
   } else {
     section.addWidget(btnSet.addButton(snoozeButton));
   }
-
-  section.addWidget(snoozeAddRecipients(e.formInput.snoozerecipients));
-  section.addWidget(emailSnoozeRecipientGroupsButtons());
-  section.addWidget(getManangeCustomButtons());
+  section.addWidget(recipienttxt)
+    .addWidget(snoozeAddRecipients(e.formInput.snoozerecipients))
+    .addWidget(emailSnoozeRecipientGroupsButtons())
+    .addWidget(getManangeCustomButtons());
 
   // add section to card and build display
   var card = CardService.newCardBuilder().addSection(section);
   return CardService.newNavigation().updateCard(card.build());
-
 }
 
 
@@ -66,20 +83,23 @@ function snoozeEmailCard(e) {
  * @return {CardService.Card} The button set containing each Snooze Quick Button
  */
 function snoozeQuickButtons() {
+  // recieve saved quick snooze times from PropertiesService
   var quicksnoozetimes = getPropertyquicksnooze();
 
+  // creates a button for each time saved to call clickQuickSnoozeButtons with respective parameter
   var snoozeButtonSet = CardService.newButtonSet();
-
-  quicksnoozetimes.forEach(function(value) {
-    console.log(value[1]);
+  // loop through quicksnoozetimes: value[0] = (string) name, value[1] = (int) hours
+  quicksnoozetimes.forEach(function(value) { // for each time saved
+    // sets parameter for clickQuickSnoozeButtons() to time's hours
     var savedaction = CardService.newAction()
-    .setFunctionName('quickSnoozeButtons')
-    .setParameters({hours:value[1]});
-    var mapButton = CardService.newTextButton()
+      .setFunctionName('clickQuickSnoozeButtons')
+      .setParameters({hours:value[1]});
+    // create a button for that time
+    var button = CardService.newTextButton()
       .setText(value[0])
       .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
       .setOnClickAction(savedaction);
-    snoozeButtonSet.addButton(mapButton);
+    snoozeButtonSet.addButton(button);
   });
 
   return snoozeButtonSet;
@@ -95,40 +115,50 @@ function snoozeDateTimePicker() {
     .setFieldName("date_field")
     .setValueInMsSinceEpoch(snoozeUntil.getTime())
     .setOnChangeAction(CardService.newAction()
-      .setFunctionName("snoozeEmailCard"));
+    .setFunctionName("snoozeEmailCard"));
 
   return snoozeDateTimePicker;
 }
 
+/**
+ * Callback for updating the additional snooze recipient input box
+ * When snoozeEmailCard is called after user changes time picker date the card refreshes
+ * This function sets default value of snoozerecipients to be the previous input to ensure 
+ *  the user input is not reset each time
+ * @return {CardService.Card} The TextInput widget
+ */
 function snoozeAddRecipients(recipients){
-  console.log(recipients)
-  checkPropertySelectedSnoozeRecipients();
-  var scriptProperties = PropertiesService.getUserProperties();
-  var selectedrecipients = scriptProperties.getProperty("selectedrecipients");
+  var selectedrecipients = getPropertySelectedSnoozeRecipients();
   if (recipients != null){
     if (recipients.includes(selectedrecipients)) selectedrecipients = recipients
     else selectedrecipients = recipients + selectedrecipients
   } 
   var addrecipients = CardService.newTextInput()
     .setFieldName("snoozerecipients")
-    .setTitle("Include Additional Recipients")
+    .setTitle("Enter comma separated email addresses")
     .setMultiline(true)
     .setValue(selectedrecipients);
   return addrecipients;
 }
 
+/**
+ * Callback creates a time-based trigger to forward current email and moves
+ * current email out of inbox into snoozed folder
+ * @return {CardService.Card} onGmailMessageSelected (goes back to homepage)
+ */
 function snoozeTimer(e){
+  // get thread and add it to snoozed folder
   var thread = GmailApp.getThreadById(e.gmail.threadId);
   var label = GmailApp.getUserLabelByName("Snoozed");
   thread.addLabel(label);
 
-  // set a time based trigger
+  // set a time based trigger to forward email
   var trigger = ScriptApp.newTrigger('forwardEmail')
     .timeBased()
     .after(snoozeUntil.getTime()-now.getTime()) // time in milliseconds
     .create();
 
-  // stores email information so that it can be used by forwardEmail later
+  // stores email information so that it can be used by forwardEmail later and clears selectedrecipients
   var id = trigger.getUniqueId();
   var scriptProperties = PropertiesService.getScriptProperties();
   scriptProperties.setProperty("selectedrecipients", " ");
@@ -150,7 +180,12 @@ function snoozeTimer(e){
  */
 function noAction() {}
 
-
+/**
+ * Called by time-based trigger
+ * Retrieves the email thread associated the with trigger
+ * if the email has not been moved to the inbox, it forwards the email
+ * to the current user's email address and any additional recipients
+ */
 function forwardEmail(e) {
   // retrieves the email information
   var triggerId = e.triggerUid;
@@ -159,7 +194,6 @@ function forwardEmail(e) {
   var message = GmailApp.getMessageById(email);
   var thread =  message.getThread();
   var label = GmailApp.getUserLabelByName("Snoozed");
-  console.log(thread.getLabels());
 
   // only forwards email if it is found in the Snooze folder
   if (thread.getLabels().includes(label)){
@@ -175,19 +209,69 @@ function forwardEmail(e) {
 
     // remove label from original email and move to trash
     thread.removeLabel(label);
-    //thread.moveToTrash();
   }
 }
 
-
-function buttonSnoozeTimeChange(e, hours){
-  console.log(hours);
-  snoozeUntil = new Date(now.getTime()+hours*3600000);
-  console.log(snoozeUntil);
+/**
+ * Called by the user through clicking the quicktime buttons. 
+ * Updates global variable snoozeUntil with the user input's time
+ * then calls snooze timer to set time-based trigger
+ */
+function clickQuickSnoozeButtons(e){
+  // 3600000 converts hours to milliseconds
+  snoozeUntil = new Date(now.getTime()+(e.parameters.hours*3600000));
   return snoozeTimer(e);
 }
+
+
+//------------------------------- RECIPIENT GROUPS FUNCTIONS -------------------------------------
 /**
- * Actions for the Snooze Quick Button widgets. Each calls the buttonSnoozeTimeChange
- * function, with the amount of hours
+ * Recipient groups allows the user to store strings containing a group of recipient emails
+  * e.g [["my friends", "email1@gmail.com, email2@gmail.com, email3@gmail.com"], ["my team", email4@gmail.com, email5@gmail.com"]]
+ * This will be used during the snooze function to shortcut snoozing to a group of recipients 
  */
-function quickSnoozeButtons(e){return buttonSnoozeTimeChange(e, +e.parameters.hours);}
+
+/**
+ * Callback creates buttonset containing one button for each group
+ * @return {CardService.Card} The buttonset widget
+ */
+function emailSnoozeRecipientGroupsButtons(){
+  // retrieve stored recipientgroups from PropertiesService
+  var recipientgroups = getPropertyrecipientgroups();
+
+  // if they do not have any recipient groups, return explanation paragraph
+  if (recipientgroups.length == 0) {
+    return CardService.newTextParagraph()
+    .setText("\nCreate custom quick buttons below:")
+  }
+
+  // create button set containing one button for each group
+  var buttonset = CardService.newButtonSet();
+  // loop through each group: value[0] = (string) name, value[1] = (string) comma separated addresses
+  recipientgroups.forEach(function(value) {
+    // create an action with group's respective parameters
+    var savedaction = CardService.newAction()
+    .setFunctionName('emailSnoozeRecipientGroupsAction')
+    .setParameters({label:value[0], recipients:value[1]});
+    // create button
+    var button = CardService.newTextButton()
+      .setText(value[0])
+      .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+      .setBackgroundColor("#71c0eb")
+      .setOnClickAction(savedaction);
+    // add button to buttonset
+    buttonset.addButton(button);
+  });
+  return buttonset;
+}
+
+/**
+ * Callback adds the recipient email string to the "include additional recipients" input box
+ * @return {CardService.Card} snoozeEmailCard() (to update display)
+ */
+function emailSnoozeRecipientGroupsAction(e){
+  var scriptProperties = PropertiesService.getUserProperties();
+  getPropertySelectedSnoozeRecipients()
+  scriptProperties.setProperty("selectedrecipients", e.parameters.recipients);
+  return snoozeEmailCard(e)
+}
