@@ -528,6 +528,7 @@ function GeneralInfoCardUpdateDP(e) {
   scriptProperties.put("dptitle",e.formInput.titleDPvalue);
   scriptProperties.put("dplength",e.formInput.meetingLengthDPvalue);
   scriptProperties.put("dplocation",locationDPvar);
+  scriptProperties.put("dpnotes", e.formInput.notesDPvalue);
 
   var updatedSection = generalInfoSection();
 
@@ -635,15 +636,10 @@ function removeTextOption(e) {
   var scriptProperties = PropertiesService.getUserProperties();
   checkPropertyDPTextOptions();
   textoptions = JSON.parse(scriptProperties.getProperty("dptextoptions"));
-  newerlist = [];
-  textoptions.forEach(function(value) {
-    formattedValue = Utilities.formatDate(new Date(value.msSinceEpoch), userTimeZone, "EEE, MMM dd, hh:mm a");
-    if (formattedValue != e.formInput.removeOptionDPvalue) {
-      newerlist.push(value)
-    }
-  })
-  scriptProperties.setProperty("dptextoptions", JSON.stringify(newerlist));
-  return dateScheduleUpdateDP();
+  textoptions.pop(e.formInput.removeOptionDPvalue);
+  scriptProperties.setProperty("dptextoptions", JSON.stringify(textoptions));
+
+  return textScheduleUpdateDP();
 }
 
 // -----------------------------------------------------------------------------------
@@ -678,10 +674,13 @@ function completePoll (e) {
   var title = scriptProperties.get("dptitle");
   var meetinglength = scriptProperties.get("dplength");
   var meetinglocation = scriptProperties.get("dplocation");
+  var notes = scriptProperties.get("dpnotes");
 
   // Title / Description
-  var form = FormApp.create(title);
-  form.addParagraphTextItem().setTitle(title);
+  var form = FormApp.create(title)
+    .setTitle(title)
+    .setDescription(notes);
+    //  .addParagraphTextItem()
 
   // If only 1 vote allowed, provide radio buttons
   if (e.formInput.switchSingleVoteKey) {
@@ -748,7 +747,7 @@ function onFormResponse(e){
   MailApp.sendEmail(Session.getActiveUser().getEmail(), "New form response", emailBody);
 }
 
-function bookMeetingCard(e){ 
+function bookMeetingCard(e){
   formid = e.parameters.formid;
   var storedpolls = getPropertyDPManaging();
   var emails = [];
@@ -789,7 +788,7 @@ function bookMeetingCard(e){
     .addWidget(addemailsubmit)
     .addWidget(locationfield)
     .addWidget(bookButton);
-  
+
   var footer = buildPreviousAndRootButtonSet();
 
   // Card which includes the Snooze components only
@@ -799,7 +798,7 @@ function bookMeetingCard(e){
   return card.build();
 }
 
-function bookMeetingAddEmail(e){ 
+function bookMeetingAddEmail(e){
   meetingAddEmail(e.parameters.formid, e.formInput.addemails)
   return bookMeetingCard(e)
 }
@@ -820,7 +819,7 @@ function bookMeeting(e){
   var emails = [];
   storedlocation = e.formInput.locationfield
 
-  storedpolls.forEach(function(array) {if (array[0]== formid) 
+  storedpolls.forEach(function(array) {if (array[0]== formid)
   {meetinglength = array[1]; emails = array[2];}})
   console.log(meetinglength)
   emailstring = "";
@@ -836,7 +835,7 @@ function bookMeeting(e){
   endtime = new Date(starttime.getTime()+(meetinglength * 60 * 1000)); // add 30 minutes in milliseconds
   console.log(starttime);
   console.log(endtime);
-  CalendarApp.getDefaultCalendar().createEvent(e.formInput.titlefield,starttime,endtime, 
+  CalendarApp.getDefaultCalendar().createEvent(e.formInput.titlefield,starttime,endtime,
     {location:storedlocation, guests:emailstring, sendInvites:true}); // location for now is always set to zoom
   return closeDoodlePoll(e)
 }
