@@ -13,7 +13,7 @@ The add-on has 3 main functions:
 
 <h3>Snooze Emails</h3>
 
-The <b>'Snooze Email'</b> function enables user to snooze an email for a designated time or for a specific date. The 'Snooze' feature helps you to stay on top of your inbox, by sending a reminder to follow up an email that at the time, you weren't able to respond to. Robbie also adds a folder in the Gmail sidebar, which automatically stores Snoozed emails. 
+The <b>'Snooze Email'</b> function enables users to snooze an email for a designated time or for a specific date. The 'Snooze' feature helps you to stay on top of your inbox, by sending a reminder to follow up an email that at the time, you aren't able to respond to. Robbie also adds a folder in the Gmail sidebar, which automatically stores Snoozed emails. 
   
   To snooze an email, you'll need to:
   
