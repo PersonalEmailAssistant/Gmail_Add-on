@@ -2,7 +2,7 @@
 /** 
  * EMAIL SNOOZE:
  * Snoozing emails temporarily removes them from the inbox and, after a set period of time,
- * returns them back to the top of the inbox
+ * returns them to the top of the inbox
  * This allows users to manage their inbox by reminding them to follow up on emails that they may not
  * initially have time to repond to at a set later date
  */
@@ -22,6 +22,14 @@ function snoozeEmailCard(e) {
   if (e.formInput.date_field != undefined){
     snoozeUntil = new Date(e.formInput.date_field.msSinceEpoch);
   }
+
+  // text widgets to provide desciptions and instructions
+  var descriptiontxt = CardService.newTextParagraph()
+    .setText("Snoozing emails temporarily removes them from the inbox and, after a set period of time, returns them to the top of the inbox. \n\nClick a time to snooze email: ");
+  var explanationtxt = CardService.newTextParagraph()
+    .setText("\nOr choose your own time below: ")
+  var recipienttxt = CardService.newTextParagraph()
+    .setText("\n(Optional) Include additional recipients: ")
 
   // Button Actions
   // action calls snoozeTimer to create a time-based trigger
@@ -45,7 +53,9 @@ function snoozeEmailCard(e) {
   // create section to display widgets
   var section = CardService.newCardSection()
     .setHeader("Snooze Email")
+    .addWidget(descriptiontxt)
     .addWidget(snoozeQuickButtons())
+    .addWidget(explanationtxt)
     .addWidget(snoozeDateTimePicker());
 
   // check that date/time input is not in the past
@@ -56,10 +66,10 @@ function snoozeEmailCard(e) {
   } else {
     section.addWidget(btnSet.addButton(snoozeButton));
   }
-
-  section.addWidget(snoozeAddRecipients(e.formInput.snoozerecipients));
-  section.addWidget(emailSnoozeRecipientGroupsButtons());
-  section.addWidget(getManangeCustomButtons());
+  section.addWidget(recipienttxt)
+    .addWidget(snoozeAddRecipients(e.formInput.snoozerecipients))
+    .addWidget(emailSnoozeRecipientGroupsButtons())
+    .addWidget(getManangeCustomButtons());
 
   // add section to card and build display
   var card = CardService.newCardBuilder().addSection(section);
@@ -125,7 +135,7 @@ function snoozeAddRecipients(recipients){
   } 
   var addrecipients = CardService.newTextInput()
     .setFieldName("snoozerecipients")
-    .setTitle("Include Additional Recipients")
+    .setTitle("Enter comma separated email addresses")
     .setMultiline(true)
     .setValue(selectedrecipients);
   return addrecipients;
@@ -228,6 +238,12 @@ function clickQuickSnoozeButtons(e){
 function emailSnoozeRecipientGroupsButtons(){
   // retrieve stored recipientgroups from PropertiesService
   var recipientgroups = getPropertyrecipientgroups();
+
+  // if they do not have any recipient groups, return explanation paragraph
+  if (recipientgroups.length == 0) {
+    return CardService.newTextParagraph()
+    .setText("\nCreate custom quick buttons below:")
+  }
 
   // create button set containing one button for each group
   var buttonset = CardService.newButtonSet();
