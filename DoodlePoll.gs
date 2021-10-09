@@ -248,7 +248,7 @@ function locationDP(e) {
 
   locations = getPropertyDPLocation();
   locations.forEach(function(value) {
-    if (locationDPvar == value) locationDP.addItem(value, value, true)
+    if (location == value) locationDP.addItem(value, value, true)
     else locationDP.addItem(value, value, false)
   })
 
