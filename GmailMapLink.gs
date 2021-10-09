@@ -62,7 +62,6 @@ function generalSection(e) {
     .addWidget(positionInput())
     .addWidget(inserting())
     .addWidget(addLocationButton())
-    //.addWidget(deleteLocationButton()) - locations should be deleted from "manage custom buttons" page
     ;
 
   if (checkSideBarOrComposing() == false) {
@@ -73,7 +72,6 @@ function generalSection(e) {
     .addWidget(massageInput())
     .addWidget(inserting())
     .addWidget(addLocationButton())
-    //.addWidget(deleteLocationButton()) - locations should be deleted from "manage custom buttons" page
     ;
   }
   return generalSection;
@@ -103,11 +101,16 @@ function positionInput(e) {
 
 function massageInput(e) {
   var selectedlocation = getPropertymapselected()
+  console.log(selectedlocation)
   var massageInput = CardService.newTextInput()
     .setFieldName('message')
     .setTitle('Message')
-    .setHint('Optional')
-    .setValue(selectedlocation[2]);
+    .setHint('Optional');
+
+  //null may occur since message isn't required for saving location
+  if (selectedlocation[2] != null) {
+    massageInput.setValue(selectedlocation[2]);
+  }
 
   return massageInput; 
 }
@@ -233,7 +236,9 @@ function onGmailInsertMap(e) {
   }
   // Get the text that was entered by the user.
   var location = e.formInput.location;
-  var position = e.formInput.position;
+  var positions = e.formInput.position;
+  //delete all the white spaces inside user input string
+  var position = positions.split(' ').join('');
   // check if user wrote a message
   var message = "";
   if (e.formInput.message!=undefined) message = e.formInput.message;
@@ -317,22 +322,3 @@ function saveNewLocation(e){
     return CardService.newNavigation().updateCard(onGmailCompose())
   }
 }
-/*
-function deleteLocation(e){
-  var scriptProperties = PropertiesService.getUserProperties(); // this should allow for long-term storage
-  var savedlocation = getPropertymap();
-  var message = "";
-  if (e.formInput.message!=undefined) message = e.formInput.message;
-  savedlocation.push([e.formInput.location,e.formInput.position, message])
-
-  scriptProperties.deleteProperty("map");
-  scriptProperties.deleteProperty("mapselected");
-  
-  if (checkSideBarOrComposing() == true){ 
-    return CardService.newNavigation().updateCard(onGmailSideBarML())
-  } else if (checkSideBarOrComposing() == false){
-    return CardService.newNavigation().updateCard(onGmailCompose())
-  }
-}
-*/
-
