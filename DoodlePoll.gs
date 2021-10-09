@@ -232,7 +232,6 @@ function meetingLengthDP(e) {
 }
 
 function locationDP(e) {
-
   var locationDP = CardService.newSelectionInput()
     .setType(CardService.SelectionInputType.DROPDOWN)
     .setFieldName("locationDPvalue")
@@ -240,12 +239,10 @@ function locationDP(e) {
     .setOnChangeAction(CardService.newAction()
       .setFunctionName('updateLocationDP'));
 
-  checkPropertyDPLocation();
-  var scriptProperties = PropertiesService.getUserProperties();
-  locations = JSON.parse(scriptProperties.getProperty("dplocations"));
+  locations = getPropertyDPLocation();
   locations.forEach(function(value) {
-    if (locationDPvar == value[0]) locationDP.addItem(value[0], value[1], true)
-    else locationDP.addItem(value[0], value[1], false)
+    if (locationDPvar == value) locationDP.addItem(value, value, true)
+    else locationDP.addItem(value, value, false)
   })
 
   return locationDP;
