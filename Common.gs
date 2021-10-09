@@ -211,6 +211,14 @@ var buttonSetSnooze = CardService.newButtonSet()
             .setFunctionName('snoozeEmailCard'))
     );
 
+var resetAction = CardService.newAction()
+  .setFunctionName("resetAllPropertiesService")
+  var resetPropertiesServicebutton = CardService.newTextButton()
+    .setText('Reset All User Specific Data')
+    .setOnClickAction(resetAction);
+  var resetSection = CardService.newCardSection()
+    .addWidget(resetPropertiesServicebutton).setCollapsible(true);
+
 if (isOnHomepage == true) {
   var section = CardService.newCardSection()
   .addWidget(banner)
@@ -250,6 +258,7 @@ return CardService.newCardBuilder()
 )
 
 .addSection(section)
+.addSection(resetSection)
 .setFixedFooter(footer)
 .build();
 }

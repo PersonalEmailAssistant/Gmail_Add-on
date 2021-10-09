@@ -27,7 +27,7 @@ function getPropertymap(){
   else {
     // check every value is valid
     map.forEach(function(value) {
-      if (value[0] == undefined || value[1] == undefined|| value[2] == undefined){
+      if (value[0] == undefined || value[1] == undefined || value[2] == undefined){
         map = []; 
         scriptProperties.setProperty("mapselected", JSON.stringify(["","",""]));
       }
@@ -56,6 +56,8 @@ function getPropertymapselected(){
       mapselected = ["","",""];
     }
   }
+  console.log("getPropertymapselected")
+  console.log(mapselected)
   scriptProperties.setProperty("mapselected", JSON.stringify(mapselected));
   return mapselected
 }
@@ -139,6 +141,7 @@ function getPropertyDPLocation(){
   console.log("checking dplocations")
   var scriptProperties = PropertiesService.getUserProperties();
   var dplocations = JSON.parse(scriptProperties.getProperty("dplocations"));
+  console.log(dplocations)
   if (dplocations===null){
     dplocations = ["To Be Confirmed","Other","Zoom","Teams"];
   }
@@ -415,6 +418,7 @@ function addNewQuickButton(e){
 }
 
 function addQuickLocationButton(e){
+  console.log("checking input!!!!")
   console.log(e.formInput.addQuickLocationInput);
   if (e.formInput.addQuickLocationInput == undefined) return;
   getPropertyDPLocation();
@@ -441,4 +445,18 @@ function removePropertiesServiceItem(e){
 
   scriptProperties.setProperty(e.parameters.name, JSON.stringify(newarray));
   return manageCustomButtonsCard(e);
+}
+
+
+function resetAllPropertiesService(){
+  var scriptProperties = PropertiesService.getUserProperties();
+  scriptProperties.setProperty("map", JSON.stringify([]));
+  scriptProperties.setProperty("mapselected", JSON.stringify(["","",""]));
+  scriptProperties.setProperty("quicksnooze", JSON.stringify([["30 Minutes","0.5"],["2 Hours","2"],["Tomorrow","24"],["Next Week","168"]]));
+  scriptProperties.setProperty("recipientgroups", JSON.stringify([]));
+  scriptProperties.setProperty("selectedrecipients", " ");
+  scriptProperties.setProperty("dplocations", JSON.stringify(["To Be Confirmed","Other","Zoom","Teams"]));
+  scriptProperties.setProperty("dptextoptions", JSON.stringify([]));
+  scriptProperties.setProperty("dpdateoptions", JSON.stringify([]));
+  scriptProperties.setProperty("dpmanaging", JSON.stringify([]));
 }
