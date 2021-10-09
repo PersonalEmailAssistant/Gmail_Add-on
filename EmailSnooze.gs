@@ -1,3 +1,5 @@
+
+   
 //------------------------------- EMAIL SNOOZE FUNCTIONS -------------------------------------
 /** 
  * EMAIL SNOOZE:
@@ -71,9 +73,20 @@ function snoozeEmailCard(e) {
     .addWidget(emailSnoozeRecipientGroupsButtons())
     .addWidget(getManangeCustomButtons());
 
+  //do we need a footer for snooze or not? cause i think this might be more consistent if we add it.
+  
+  var footer = buildPreviousAndRootButtonSet();
+  var card = CardService.newCardBuilder()
+  .setFixedFooter(footer)
+  .addSection(section);
+  return card.build();
+  
+  //if the footer isn't neccessary, delete ^ code above ^ is fine
+  /*
   // add section to card and build display
   var card = CardService.newCardBuilder().addSection(section);
   return CardService.newNavigation().updateCard(card.build());
+  */
 }
 
 
