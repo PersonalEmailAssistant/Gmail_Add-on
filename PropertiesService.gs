@@ -14,29 +14,42 @@ function checkPropertymap(){
 
 function getPropertyquicksnooze(){
   var scriptProperties = PropertiesService.getUserProperties();
-  quicksnooze = JSON.parse(scriptProperties.getProperty("quicksnooze"));
+  var quicksnooze = JSON.parse(scriptProperties.getProperty("quicksnooze"));
   if (quicksnooze===null){
-    var quicksnooze = [["30 Minutes","0.5"],["2 Hours","2"],["Tomorrow","24"],["Next Week","168"]]; // time in hours
-    scriptProperties.setProperty("quicksnooze", JSON.stringify(quicksnooze));
+    quicksnooze = [["30 Minutes","0.5"],["2 Hours","2"],["Tomorrow","24"],["Next Week","168"]]; // time in hours
   }
+  else {
+    // check every value is valid
+    quicksnooze.forEach(function(value) {
+      if (value[0] == undefined || value[1] == undefined){
+        quicksnooze = [["30 Minutes","0.5"],["2 Hours","2"],["Tomorrow","24"],["Next Week","168"]]; // time in hours
+      }
+    } )
+  }
+  scriptProperties.setProperty("quicksnooze", JSON.stringify(quicksnooze));
   return quicksnooze
 }
 
 function getPropertyrecipientgroups(){
   var scriptProperties = PropertiesService.getUserProperties();
   recipientgroups = JSON.parse(scriptProperties.getProperty("recipientgroups"))
-  if (recipientgroups == null ){
-    scriptProperties.setProperty("recipientgroups", JSON.stringify([]));
+  if (recipientgroups == null ){ recipientgroups = [] }
+  else {
+    // check every value is valid
+    recipientgroups.forEach(function(value) {
+      if (value[0] == undefined || value[1] == undefined){ recipientgroups = []; }
+    })
   }
+  scriptProperties.setProperty("recipientgroups", JSON.stringify(recipientgroups));
   return recipientgroups
 }
 
 function getPropertySelectedSnoozeRecipients(){
   var scriptProperties = PropertiesService.getUserProperties();
   selectedrecipients = scriptProperties.getProperty("selectedrecipients")
-  if (selectedrecipients===null){
-    scriptProperties.setProperty("selectedrecipients", " ");
-  }
+  if (selectedrecipients===null){ selectedrecipients = " "; }
+  else if (typeof(selectedrecipients) != "string") { selectedrecipients = " "; }
+  scriptProperties.setProperty("selectedrecipients", selectedrecipients);
   return selectedrecipients
 }
 
@@ -297,3 +310,4 @@ function removePropertiesServiceItem(e){
   scriptProperties.setProperty(e.parameters.name, JSON.stringify(newarray));
   return manageCustomButtonsCard(e);
 }
+
