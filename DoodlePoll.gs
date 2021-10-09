@@ -2,7 +2,16 @@
 function doodlePoll(e) {
   PropertiesService.getUserProperties().deleteAllProperties();
   items = getPropertyDPManaging();
-  console.log(items)
+
+  // Reset UserCache
+  var userCache = CacheService.getUserCache();
+  userCache.put("dptitle",null);
+  userCache.put("dplength",null);
+  userCache.put("dplocation",null);
+  userCache.put("dpotherlocation",null);
+  userCache.put("dpnotes",null);
+  userCache.put("dpdateused", true)
+
   if (items.length == 0){return createDoodlePoll(e);}
   var button1 = CardService.newTextButton()
       .setText('Create new doodle poll')
@@ -46,9 +55,9 @@ function doodlePoll(e) {
 }
 
 function createDoodlePoll(e){
-  var scriptProperties = PropertiesService.getUserProperties();
-  scriptProperties.setProperty("dpdateoptions", JSON.stringify([]));
-  scriptProperties.setProperty("dptextoptions", JSON.stringify([]));
+  var userProperties = PropertiesService.getUserProperties();
+  userProperties.setProperty("dpdateoptions", JSON.stringify([]));
+  userProperties.setProperty("dptextoptions", JSON.stringify([]));
 
   var card = CardService.newCardBuilder()
     .addSection(generalInfoSection())
@@ -56,19 +65,6 @@ function createDoodlePoll(e){
   return card.build();
 }
 
-// -----------------------------------------------------------------------------------
-// -------------------------- DOODLE POLL GLOBAL VARIABLES ---------------------------
-// -----------------------------------------------------------------------------------
-
-// Section 1
-var titleDPvar;
-var meetingLengthDPvar;
-var locationDPvar = 'To Be Confirmed';
-var otherLocationDPvar;
-var notesDPvar;
-
-// Section 2
-var dateUsedDP = true;
 
 // -----------------------------------------------------------------------------------
 // ---------------------------- BASE DOODLE POLL SECTIONS ----------------------------
@@ -101,11 +97,12 @@ function schedulingSection(e) {
     .setHeader("Step 2 of 3: Scheduling Options")
     .addWidget(headerDP2())
     .addWidget(schedulingButtons())
-    console.log(dateUsedDP)
-    if (dateUsedDP) {
-      schedulingSection.addWidget(dateSelectorDP())
-        .addWidget(addDateOptionButtonDP());
-    }
+
+  var userCache = CacheService.getUserCache();
+  if (userCache.get("dpdateused")) {
+    schedulingSection.addWidget(dateSelectorDP())
+      .addWidget(addDateOptionButtonDP());
+  }
 
 
   return schedulingSection;
@@ -209,29 +206,39 @@ function nextButtonDP3(e) {
 
 function titleDP(e) {
 
+  var userCache = CacheService.getUserCache();
+  var title = userCache.get("dptitle");
+
   var titleDP = CardService.newTextInput()
     .setFieldName("titleDPvalue")
     .setTitle("Title of Meeting Poll")
     .setHint("Required")
 
-  if (titleDPvar != null) titleDP.setValue(titleDPvar);
+  if (title != null) titleDP.setValue(title);
 
   return titleDP;
 }
 
 function meetingLengthDP(e) {
 
+  var userCache = CacheService.getUserCache();
+  var meetinglength = userCache.get("dplength");
+
   var meetingLength = CardService.newTextInput()
     .setFieldName("meetingLengthDPvalue")
     .setTitle("Length of Meeting")
     .setHint("Required. Set in minutes. A 1 hour meeting is '60'.")
 
-  if (meetingLengthDPvar != null) meetingLength.setValue(meetingLengthDPvar);
+  if (meetinglength != null) meetingLength.setValue(meetinglength);
 
   return meetingLength;
 }
 
 function locationDP(e) {
+
+  var userCache = CacheService.getUserCache();
+  var location = userCache.get("dplocation");
+
   var locationDP = CardService.newSelectionInput()
     .setType(CardService.SelectionInputType.DROPDOWN)
     .setFieldName("locationDPvalue")
@@ -251,23 +258,29 @@ function locationDP(e) {
 // NON-ROOT NODE WIDGET (ISN'T DISPLAYED WHEN THE CARD FIRST LOADS)
 function otherLocationDP(e) {
 
+  var userCache = CacheService.getUserCache();
+  var otherlocation = userCache.get("dpotherlocation");
+
   var otherLocationDP = CardService.newTextInput()
     .setFieldName("otherLocationDPvalue")
     .setTitle("Other Location")
 
-  if (otherLocationDPvar != null) otherLocationDP.setValue(otherLocationDPvar)
+  if (otherlocation != null) otherLocationDP.setValue(otherlocation)
 
   return otherLocationDP;
 }
 
 function notesDP(e) {
 
+  var userCache = CacheService.getUserCache();
+  var notes = userCache.get("dpnotes");
+
   var notesDP = CardService.newTextInput()
     .setFieldName("notesDPvalue")
     .setTitle("Notes")
     .setHint("Optional. Provides a description for the poll.")
 
-  if (notesDPvar != null) notesDP.setValue(notesDPvar)
+  if (notes != null) notesDP.setValue(notes)
 
   return notesDP;
 }
@@ -305,8 +318,8 @@ function dateSelectorDP(e) {
       .setFieldName("dateSelectorKey")
 
   checkPropertyDPDateOptions();
-  var scriptProperties = PropertiesService.getUserProperties();
-  dateOptions = JSON.parse(scriptProperties.getProperty("dpdateoptions"));
+  var userProperties = PropertiesService.getUserProperties();
+  dateOptions = JSON.parse(userProperties.getProperty("dpdateoptions"));
 
   if (dateOptions.length == 0) dateSelector.setValueInMsSinceEpoch(new Date().getTime());
   else dateSelector.setValueInMsSinceEpoch(dateOptions[dateOptions.length-1].msSinceEpoch);
@@ -327,13 +340,24 @@ function addDateOptionButtonDP(e) {
 
 function formatDatesDP(e) {
   checkPropertyDPDateOptions();
-  var scriptProperties = PropertiesService.getUserProperties();
-  dateOptions = JSON.parse(scriptProperties.getProperty("dpdateoptions"));
+  var userProperties = PropertiesService.getUserProperties();
+  dateOptions = JSON.parse(userProperties.getProperty("dpdateoptions"));
+
+  var userProperties = CacheService.getUserCache();
+  var meetinglength = userProperties.get("dplength");
 
   var formattedDates = [];
   dateOptions.forEach(function(value) {
-    formattedDates.push(Utilities.formatDate(new Date(value.msSinceEpoch), userTimeZone, "EEE, MMM dd, hh:mm a"));
+    var startTime = Utilities.formatDate(new Date(value.msSinceEpoch), userTimeZone, "EEE, MMM dd YYYY, hh:mm a");
+    var endTime = Utilities.formatDate(new Date(value.msSinceEpoch  + meetinglength * 60000),
+        userTimeZone, "EEE, MMM dd YYYY, hh:mm a");
+    console.log("Start Time: " + startTime);
+    console.log("End Time: " + endTime);
+    console.log("OG Number: " + value.msSinceEpoch);
+    console.log("Plus Meeting Length: " + meetinglength);
+    formattedDates.push(startTime + " - \n" + endTime);
   })
+
   return formattedDates;
 }
 
@@ -362,8 +386,8 @@ function showDateOptionDP(e) {
   var formattedText = ''
 
   checkPropertyDPDateOptions();
-  var scriptProperties = PropertiesService.getUserProperties();
-  textoptions = JSON.parse(scriptProperties.getProperty("dpdateoptions"));
+  var userProperties = PropertiesService.getUserProperties();
+  textoptions = JSON.parse(userProperties.getProperty("dpdateoptions"));
 
   textoptions.forEach(function(value) {
     time = new Date(value.msSinceEpoch);
@@ -385,8 +409,8 @@ function showTextOptionDP(e) {
 
   var formattedText = ''
   checkPropertyDPTextOptions();
-  var scriptProperties = PropertiesService.getUserProperties();
-  textoptions = JSON.parse(scriptProperties.getProperty("dptextoptions"));
+  var userProperties = PropertiesService.getUserProperties();
+  textoptions = JSON.parse(userProperties.getProperty("dptextoptions"));
   textoptions.forEach(function(value) {
     formattedText = formattedText + value + '\n';
   })
@@ -406,12 +430,13 @@ function removeOptionDP(e) {
     .setTitle("Remove an Option")
 
   removeOption.addItem("","",true)
-  var scriptProperties = PropertiesService.getUserProperties();
-  if (dateUsedDP) {
+  var userProperties = PropertiesService.getUserProperties();
+  var userCache = CacheService.getUserCache();
+  if (userCache.get("dpdateused")) {
     removeOption.setOnChangeAction(CardService.newAction()
       .setFunctionName('removeDateOption'));
     checkPropertyDPDateOptions();
-    options = JSON.parse(scriptProperties.getProperty("dpdateoptions"));
+    options = JSON.parse(userProperties.getProperty("dpdateoptions"));
     options.forEach(function(value) {
       time = new Date(value.msSinceEpoch);
       //https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
@@ -423,7 +448,7 @@ function removeOptionDP(e) {
     removeOption.setOnChangeAction(CardService.newAction()
       .setFunctionName('removeTextOption'));
     checkPropertyDPTextOptions();
-    options = JSON.parse(scriptProperties.getProperty("dptextoptions"));
+    options = JSON.parse(userProperties.getProperty("dptextoptions"));
     options.forEach(function(value) {
       removeOption.addItem(value, value, false)
     })
@@ -493,12 +518,22 @@ function switchResponses() {
 
 function updateLocationDP(e) {
 
+  // PUT VALUES INTO UserCache
+  var userCache = CacheService.getUserCache();
+  userCache.put("dptitle",e.formInput.titleDPvalue);
+  userCache.put("dplength",e.formInput.meetingLengthDPvalue);
+  userCache.put("dplocation",e.formInput.locationDPvalue);
+  userCache.put("dpotherlocation",e.formInput.otherLocationDPvalue);
+  userCache.put("dpnotes", e.formInput.notesDPvalue);
+
+  /*
   // UPDATE WIDGET VALUES
   titleDPvar = e.formInput.titleDPvalue;
   meetingLengthDPvar = e.formInput.meetingLengthDPvalue;
   notesDPvar = e.formInput.notesDPvalue;
   locationDPvar = e.formInput.locationDPvalue;
   otherLocationDPvar = e.formInput.otherLocationDPvalue;
+  */
 
   // UPDATE SECTION ACCORDING TO IF 'OTHER' LOCATION IS SELECTED OR
   var updatedSection = CardService.newCardSection()
@@ -528,16 +563,17 @@ function updateLocationDP(e) {
 
 // Function runs on any updates to the Text Scheduling section
 function dateScheduleUpdateDP(e) {
-  dateUsedDP = true;
+  var userCache = CacheService.getUserCache();
+  userCache.put("dpdateused", true)
 
   var dateScheduleSection = CardService.newCardSection()
     .addWidget(showDateOptionDP())
 
-  var scriptProperties = PropertiesService.getUserProperties();
-  if (JSON.parse(scriptProperties.getProperty("dpdateoptions")).length >= 1) {
+  var userProperties = PropertiesService.getUserProperties();
+  if (JSON.parse(userProperties.getProperty("dpdateoptions")).length >= 1) {
     dateScheduleSection.addWidget(removeOptionDP());
   }
-  if (JSON.parse(scriptProperties.getProperty("dpdateoptions")).length >= 2) {
+  if (JSON.parse(userProperties.getProperty("dpdateoptions")).length >= 2) {
     dateScheduleSection.addWidget(nextButtonDP2());
   }
 
@@ -552,18 +588,20 @@ function dateScheduleUpdateDP(e) {
 
 // Function runs on any updates to the Text Scheduling section
 function textScheduleUpdateDP(e) {
-  dateUsedDP = false;
+  var userCache = CacheService.getUserCache();
+  var userProperties = PropertiesService.getUserProperties();
+  userCache.put("dpdateused",false)
 
   var textScheduleSection = CardService.newCardSection()
     .addWidget(textSelectorDP())
     .addWidget(addTextOptionButtonDP())
     .addWidget(showTextOptionDP());
 
-  var scriptProperties = PropertiesService.getUserProperties();
-  if (JSON.parse(scriptProperties.getProperty("dptextoptions")).length >= 1) {
+
+  if (JSON.parse(userProperties.getProperty("dptextoptions")).length >= 1) {
     textScheduleSection.addWidget(removeOptionDP());
   }
-  if (JSON.parse(scriptProperties.getProperty("dptextoptions")).length >= 2) {
+  if (JSON.parse(userProperties.getProperty("dptextoptions")).length >= 2) {
     textScheduleSection.addWidget(nextButtonDP2());
   }
 
@@ -577,8 +615,8 @@ function textScheduleUpdateDP(e) {
 
 function addDateOption(e) {
   checkPropertyDPDateOptions();
-  var scriptProperties = PropertiesService.getUserProperties();
-  var dateoptions = JSON.parse(scriptProperties.getProperty("dpdateoptions"));
+  var userProperties = PropertiesService.getUserProperties();
+  var dateoptions = JSON.parse(userProperties.getProperty("dpdateoptions"));
   var inlist = false;
   dateoptions.forEach(function(value) {
     if (value.msSinceEpoch == e.formInput.dateSelectorKey.msSinceEpoch) {
@@ -587,15 +625,15 @@ function addDateOption(e) {
   })
   if(!inlist){
     dateoptions.push(e.formInput.dateSelectorKey);
-    scriptProperties.setProperty("dpdateoptions", JSON.stringify(dateoptions));
+    userProperties.setProperty("dpdateoptions", JSON.stringify(dateoptions));
   }
   return dateScheduleUpdateDP();
 }
 
 function addTextOption(e) {
   checkPropertyDPTextOptions();
-  var scriptProperties = PropertiesService.getUserProperties();
-  textoptions = JSON.parse(scriptProperties.getProperty("dptextoptions"));
+  var userProperties = PropertiesService.getUserProperties();
+  textoptions = JSON.parse(userProperties.getProperty("dptextoptions"));
   var inlist = false;
   textoptions.forEach(function(value) {
     if (value == e.formInput.textSelectorKey) {
@@ -605,16 +643,16 @@ function addTextOption(e) {
 
   if(!inlist){
     textoptions.push(e.formInput.textSelectorKey);
-    scriptProperties.setProperty("dptextoptions", JSON.stringify(textoptions));
+    userProperties.setProperty("dptextoptions", JSON.stringify(textoptions));
   }
 
   return textScheduleUpdateDP();
 }
 
 function removeDateOption(e) {
-  var scriptProperties = PropertiesService.getUserProperties();
+  var userProperties = PropertiesService.getUserProperties();
   checkPropertyDPDateOptions();
-  dateoptions = JSON.parse(scriptProperties.getProperty("dpdateoptions"));
+  dateoptions = JSON.parse(userProperties.getProperty("dpdateoptions"));
   newerlist = [];
   dateoptions.forEach(function(value) {
     formattedValue = Utilities.formatDate(new Date(value.msSinceEpoch), userTimeZone, "EEE, MMM dd, hh:mm a");
@@ -622,16 +660,16 @@ function removeDateOption(e) {
       newerlist.push(value)
     }
   })
-  scriptProperties.setProperty("dpdateoptions", JSON.stringify(newerlist));
+  userProperties.setProperty("dpdateoptions", JSON.stringify(newerlist));
   return dateScheduleUpdateDP();
 }
 
 function removeTextOption(e) {
-  var scriptProperties = PropertiesService.getUserProperties();
+  var userProperties = PropertiesService.getUserProperties();
   checkPropertyDPTextOptions();
-  textoptions = JSON.parse(scriptProperties.getProperty("dptextoptions"));
+  textoptions = JSON.parse(userProperties.getProperty("dptextoptions"));
   textoptions.pop(e.formInput.removeOptionDPvalue);
-  scriptProperties.setProperty("dptextoptions", JSON.stringify(textoptions));
+  userProperties.setProperty("dptextoptions", JSON.stringify(textoptions));
 
   return textScheduleUpdateDP();
 }
@@ -647,12 +685,12 @@ function ontoSection2 (e) {
       (e.formInput.locationDPvalue != 'Other' || e.formInput.otherLocationDPvalue != null)) {
 
     // PUT VALUES INTO UserCache
-    var scriptProperties = CacheService.getUserCache();
-    scriptProperties.put("dptitle",e.formInput.titleDPvalue);
-    scriptProperties.put("dplength",e.formInput.meetingLengthDPvalue);
-    scriptProperties.put("dplocation",e.formInput.locationDPvalue);
-    scriptProperties.put("dpotherlocation",e.formInput.otherLocationDPvalue);
-    scriptProperties.put("dpnotes", e.formInput.notesDPvalue);
+    var userCache = CacheService.getUserCache();
+    userCache.put("dptitle",e.formInput.titleDPvalue);
+    userCache.put("dplength",e.formInput.meetingLengthDPvalue);
+    userCache.put("dplocation",e.formInput.locationDPvalue);
+    userCache.put("dpotherlocation",e.formInput.otherLocationDPvalue);
+    userCache.put("dpnotes", e.formInput.notesDPvalue);
 
     var card = CardService.newCardBuilder()
       .addSection(schedulingSection())
@@ -674,18 +712,24 @@ function ontoSection3 (e) {
 function completePoll (e) {
 
   // RETRIEVE UserCache VALUES
-  var scriptProperties = CacheService.getUserCache();
-  var title = scriptProperties.get("dptitle");
-  var meetinglength = scriptProperties.get("dplength");
-  var meetinglocation = scriptProperties.get("dplocation");
-  var notes = scriptProperties.get("dpnotes");
-
+  var userCache = CacheService.getUserCache();
+  var title = userCache.get("dptitle");
+  var meetinglength = userCache.get("dplength");
+  var location = userCache.get("dplocation");
+  var otherlocation = userCache.get("dpotherlocation");
+  var notes = userCache.get("dpnotes");
+  var dateused = userCache.get("dpdateused")
   // Title / Description
   var form = FormApp.create(title)
     .setTitle(title)
     .setDescription(notes)
-  form.addSectionHeaderItem()
-    .setTitle('Meeting Location: ' + meetinglocation);
+  if (location != 'Other') {
+    form.addSectionHeaderItem()
+      .setTitle('Meeting Location: ' + location);
+  } else {
+    form.addSectionHeaderItem()
+      .setTitle('Meeting Location: ' + otherlocation);
+  }
 
   // If only 1 vote allowed, provide radio buttons
   if (e.formInput.switchSingleVoteKey) {
@@ -693,7 +737,7 @@ function completePoll (e) {
       .setTitle("Which meeting time suits?")
       .setHelpText("Only one choice allowed.")
       .showOtherOption(true);
-    if (dateUsedDP) {
+    if (dateused) {
       pollItem.setChoiceValues( formatDatesDP(e) )
     } else {
       pollItem.setChoiceValues( textOptions )
@@ -730,7 +774,8 @@ function completePoll (e) {
   console.log(form.getPublishedUrl())
   ScriptApp.newTrigger("onFormResponse").forForm(form).onFormSubmit().create();
   getPropertyDPManaging();
-  addNewDoodlePoll(form.getId(), meetinglength, meetinglocation);
+  if (location != 'Other') addNewDoodlePoll(form.getId(), meetinglength, location);
+  else addNewDoodlePoll(form.getId(), meetinglength, otherlocation);
 
   var text = CardService.newTextParagraph().setText("Doodle poll link: <a href="+form.getPublishedUrl()+">"+form.getPublishedUrl()+"</a>");
   var section = CardService.newCardSection()
@@ -812,10 +857,10 @@ function bookMeetingAddEmail(e){
 
 function meetingAddEmail(formid, email){
   if (email != null){
-    var scriptProperties = PropertiesService.getUserProperties();
+    var userProperties = PropertiesService.getUserProperties();
     var storedpolls = getPropertyDPManaging();
     storedpolls.forEach(function(array) {if (array[0]== formid) array[2].push(email)});
-    scriptProperties.setProperty("dpmanaging", JSON.stringify(storedpolls));
+    userProperties.setProperty("dpmanaging", JSON.stringify(storedpolls));
   }
 }
 
@@ -853,11 +898,11 @@ function closeDoodlePoll(e){
   form.setAcceptingResponses(false);
   DriveApp.getFileById(e.parameters.formid).setTrashed(true);
 
-  var scriptProperties = PropertiesService.getUserProperties();
+  var userProperties = PropertiesService.getUserProperties();
   var newarray = new Array;
-  dpmanaging = JSON.parse(scriptProperties.getProperty("dpmanaging"))
+  dpmanaging = JSON.parse(userProperties.getProperty("dpmanaging"))
   dpmanaging.forEach(function(value) {
     if (value[0]!=e.parameters.formid) newarray.push(value);});
-  scriptProperties.setProperty("dpmanaging", JSON.stringify(newarray));
+  userProperties.setProperty("dpmanaging", JSON.stringify(newarray));
   return doodlePoll(e)
 }
