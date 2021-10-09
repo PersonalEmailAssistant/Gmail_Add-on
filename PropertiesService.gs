@@ -52,7 +52,7 @@ function getPropertymapselected(){
   mapselected = JSON.parse(scriptProperties.getProperty("mapselected"));
   if(mapselected===null){ mapselected = ["","",""]; }
   else {
-    if (mapselected[0] == undefined || mapselected[1] == undefined || mapselected[2] == undefined){
+    if (mapselected[0] == undefined || mapselected[1] == undefined){
       mapselected = ["","",""];
     }
   }
