@@ -174,7 +174,7 @@ var submitButton = CardService.newTextButton()
 var action = CardService.newAction()
   .setFunctionName('easterEgg');
 var imageButton = CardService.newImageButton()
-.setIconUrl("https://static.wikia.nocookie.net/p__/images/9/95/Robby_the_Robot01.png/revision/latest/top-crop/width/360/height/360?cb=20201228181530&path-prefix=protagonist")
+.setIconUrl("https://media.istockphoto.com/photos/smiley-face-drawing-picture-id157527255")
 .setOnClickAction(action);
 //---------------------------------------------------------------------------------------
 
@@ -253,7 +253,7 @@ var footer = buildPreviousAndRootButtonSet();
 return CardService.newCardBuilder()
 .setHeader(
   CardService.newCardHeader()
-    .setTitle('Welcome to Robbie')
+    .setTitle('Welcome to Personal Assistant')
     .setSubtitle(info + ' :)')
 )
 
