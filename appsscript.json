@@ -35,8 +35,8 @@
   "runtimeVersion": "V8",
   "addOns": {
     "common": {
-      "name": "Robbie",
-      "logoUrl": "https://static.wikia.nocookie.net/p__/images/9/95/Robby_the_Robot01.png/revision/latest/top-crop/width/360/height/360?cb=20201228181530&path-prefix=protagonist",
+      "name": "PersonalAssistant",
+      "logoUrl": "https://media.istockphoto.com/photos/smiley-face-drawing-picture-id157527255",
       "useLocaleFromApp": true,
       "layoutProperties": {
         "primaryColor": "#008B8B",
