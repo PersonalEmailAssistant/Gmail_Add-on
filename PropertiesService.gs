@@ -1,15 +1,24 @@
-
 //------------------------------- MANAGE PROPERTIESSERVICE STORAGE -------------------------------------
 
-function checkPropertymap(){
+function getPropertymap(){
   var scriptProperties = PropertiesService.getUserProperties();
-  if(scriptProperties.getProperty("map")===null || JSON.parse(scriptProperties.getProperty("map"))[0].length!=3){
-    var defaultsavedlocations = [["UWA", "-31.981179,115.819910"," "]]
+  // if(scriptProperties.getProperty("map")===null || JSON.parse(scriptProperties.getProperty("map"))[0].length!=3){
+  if(scriptProperties.getProperty("map")===null){
+    var defaultsavedlocations = [["UWA", "The University of Western Australia"," "]]
     // map stores all saved locations
     scriptProperties.setProperty("map", JSON.stringify(defaultsavedlocations));
     // mapselect is used to set the default values of map link
     scriptProperties.setProperty("mapselected", JSON.stringify(["","",""]));
   }
+}
+
+function getPropertymapselected(){
+  var scriptProperties = PropertiesService.getUserProperties();
+  mapselected = scriptProperties.getProperty("mapselected")
+  if(mapselected===null){
+    scriptProperties.setProperty("mapselected", JSON.stringify(["","",""]));
+  }
+  return mapselected
 }
 
 function getPropertyquicksnooze(){
@@ -185,8 +194,7 @@ function manageCustomButtonsCard(){
 
 
   // map link buttons
-  checkPropertymap();
-  var mapsaved = JSON.parse(scriptProperties.getProperty("map"));
+  var mapsaved = getPropertymap();
   var mapButtonSet = CardService.newButtonSet();
 
   mapsaved.forEach(function(value) {

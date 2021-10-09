@@ -1,7 +1,6 @@
 //this callback function rendering ML UI on the composing section
 function onGmailCompose(e) {
   onComposing();
-  checkPropertymap();
   var card = CardService.newCardBuilder()
       .addSection(generalSection())
       .addSection(mapSavedSection());
@@ -21,8 +20,7 @@ function onGmailSideBarML(e) {
 
 function mapSavedSection(e) {
   // add buttons with saved locations
-  var scriptProperties = PropertiesService.getUserProperties();
-  var savedlocation = JSON.parse(scriptProperties.getProperty("map"));
+  var savedlocation = getPropertymap();
 
   var mapsavedButtonSet = CardService.newButtonSet();
   savedlocation.forEach(function(value) {
@@ -64,7 +62,7 @@ function generalSection(e) {
     .addWidget(positionInput())
     .addWidget(inserting())
     .addWidget(addLocationButton())
-    .addWidget(deleteLocationButton())
+    //.addWidget(deleteLocationButton()) - locations should be deleted from "manage custom buttons" page
     ;
 
   if (checkSideBarOrComposing() == false) {
@@ -75,20 +73,20 @@ function generalSection(e) {
     .addWidget(massageInput())
     .addWidget(inserting())
     .addWidget(addLocationButton())
-    .addWidget(deleteLocationButton())
+    //.addWidget(deleteLocationButton()) - locations should be deleted from "manage custom buttons" page
     ;
   }
   return generalSection;
 }
 
 function locationInput(e) {
-  checkPropertymap();
+  getPropertymap();
   var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
   var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
 
   var locationInput = CardService.newTextInput()
     .setFieldName('location')
-    .setTitle('Location')
+    .setTitle('Location Name')
     .setHint('Required')
     .setValue(selectedlocation[0]);
 
@@ -96,12 +94,12 @@ function locationInput(e) {
 }
 
 function positionInput(e) {
-  checkPropertymap();
+  getPropertymap();
   var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
   var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
   var positionInput = CardService.newTextInput()
     .setFieldName('position')
-    .setTitle('Latitude and Longitude')
+    .setTitle('Enter Location Address')
     .setHint('Required')
     .setValue(selectedlocation[1]);
 
@@ -109,7 +107,7 @@ function positionInput(e) {
 }
 
 function massageInput(e) {
-  checkPropertymap();
+  getPropertymap();
   var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
   var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
   var massageInput = CardService.newTextInput()
@@ -298,7 +296,7 @@ function setDefaultmapLocation(e){
 }
 
 function saveNewLocation(e){  
-  checkPropertymap();
+  getPropertymap();
   var scriptProperties = PropertiesService.getUserProperties(); // this should allow for long-term storage
   var savedlocation = JSON.parse(scriptProperties.getProperty("map"));
   console.log(savedlocation)
@@ -329,7 +327,7 @@ function saveNewLocation(e){
 }
 
 function deleteLocation(e){
-  checkPropertymap();
+  getPropertymap();
   var scriptProperties = PropertiesService.getUserProperties(); // this should allow for long-term storage
   var savedlocation = JSON.parse(scriptProperties.getProperty("map"));
   console.log(savedlocation)
