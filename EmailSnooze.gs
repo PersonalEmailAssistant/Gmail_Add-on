@@ -146,7 +146,10 @@ function snoozeAddRecipients(recipients){
  * current email out of inbox into snoozed folder
  * @return {CardService.Card} onGmailMessageSelected (goes back to homepage)
  */
-function snoozeTimer(e){
+function snoozeTimer(e, date){
+  console.log("snooze timer")
+  snoozeUntil = new Date(e.formInput.date_field.msSinceEpoch)
+  if (date != undefined){ snoozeUntil = date }
   // get thread and add it to snoozed folder
   var thread = GmailApp.getThreadById(e.gmail.threadId);
   var label = GmailApp.getUserLabelByName("Snoozed");
@@ -219,8 +222,8 @@ function forwardEmail(e) {
  */
 function clickQuickSnoozeButtons(e){
   // 3600000 converts hours to milliseconds
-  snoozeUntil = new Date(now.getTime()+(e.parameters.hours*3600000));
-  return snoozeTimer(e);
+  //snoozeUntil = new Date(now.getTime()+(e.parameters.hours*3600000));
+  return snoozeTimer(e, new Date(now.getTime()+(e.parameters.hours*3600000)));
 }
 
 
