@@ -1,7 +1,7 @@
 //------------------------------- MANAGE PROPERTIESSERVICE STORAGE -------------------------------------
 /**
  * PROPERTIESSERVICE:
- * PropertiesServices used for long-term storage of user-specific values.
+ * PropertiesServices used for long-term storage of user-specific values. 
  * Functions retrieve stored values from PropertiesService.getUserProperties(), check that
  * stored values are valid and then returns stored values
 */
@@ -13,7 +13,7 @@
  *      [0] the name of location (will be the hyperlinked text and displayed on test button)
  *      [1] the address of location (words or latitude and longitude, used to create the map with google API)
  *      [2] an optional message ("" if no message is given)
- * Example map object:
+ * Example map object: 
  *    [["UWA", "The University of Western Australia", ""],["Lunch Meeting Spot", "Matilda bay", "Meet at the restaurant"]]
  * @return {Object} The stored map link locations nested array
  */
@@ -28,7 +28,7 @@ function getPropertymap(){
     // check every value is valid
     map.forEach(function(value) {
       if (value[0] == undefined || value[1] == undefined|| value[2] == undefined){
-        map = [];
+        map = []; 
         scriptProperties.setProperty("mapselected", JSON.stringify(["","",""]));
       }
     })
@@ -40,10 +40,10 @@ function getPropertymap(){
 /**
  * Called by Map Link functions to set the default values for maplink inputs
  * Stores: [(string), (string), (string)]
- *      [0] location name input
+ *      [0] location name input 
  *      [1] location address input
  *      [2] message input
- * Example map selected object:
+ * Example map selected object: 
  *    ["UWA", "The University of Western Australia", ""]
  * @return {Object} The selected map link array
  */
@@ -65,7 +65,7 @@ function getPropertymapselected(){
  * Each time stores: [(string), (string)]
  *      [0] name of time to be displayed on button (usually: time in hours + " Hours")
  *      [1] time in hours used to set the snooze timebased trigger
- * Example quicksnooze object:
+ * Example quicksnooze object: 
  *    [["30 Minutes","0.5"],["2 Hours","2"],["Tomorrow","24"],["Next Week","168"]]
  * @return {Object} The quicksnooze nested array
  */
@@ -91,8 +91,8 @@ function getPropertyquicksnooze(){
  * Called by Email Snooze functions to get quick custom recipient groups buttons stored as a nested array
  * Each recipient group stores: [(string), (string)]
  *      [0] name of recipient group to be displayed on button
- *      [1] string of comma separated email addresses
- * Example recipientgroups object:
+ *      [1] string of comma separated email addresses 
+ * Example recipientgroups object: 
  *    [["Colleagues","example@uwa.edu.au, example1@uwa.edu.au, example2@uwa.edu.au"],["Family","example@gmail.com, example@gmail.com"]]
  * @return {Object} The recipientgroups nested array
  */
@@ -111,10 +111,10 @@ function getPropertyrecipientgroups(){
 }
 
 /**
- * Called by Email Snooze functions to set default additional recipient input
+ * Called by Email Snooze functions to set default additional recipient input 
  * Stores: (string)
- *      of comma separated email addresses
- * Example selectedrecipients object:
+ *      of comma separated email addresses 
+ * Example selectedrecipients object: 
  *    "example@uwa.edu.au, example1@uwa.edu.au, example2@uwa.edu.au"
  * @return {String} The selectedrecipients string
  */
@@ -127,38 +127,99 @@ function getPropertySelectedSnoozeRecipients(){
   return selectedrecipients
 }
 
-function checkPropertyDPLocation(){
+/**
+ * Called by Meeting Poll functions to store meeting location options in an array
+ * Stores: [(string)] 
+ *      each string contains a name of location
+ * Example dplocations object: 
+ *    ["To Be Confirmed","Other","Zoom","Teams"]
+ * @return {Object} The dplocations array
+ */
+function getPropertyDPLocation(){
+  console.log("checking dplocations")
   var scriptProperties = PropertiesService.getUserProperties();
-  if (scriptProperties.getProperty("dplocations")===null){
-    var defaultdplocations = [["To Be Confirmed","To Be Confirmed"],["Other", "Other"],["Zoom","Zoom"],["Teams", "Teams"]];
-    scriptProperties.setProperty("dplocations", JSON.stringify(defaultdplocations));
+  var dplocations = JSON.parse(scriptProperties.getProperty("dplocations"));
+  if (dplocations===null){
+    dplocations = ["To Be Confirmed","Other","Zoom","Teams"];
   }
+  else {
+    dplocations.forEach(function(value) {
+      if (typeof(value) != "string") dplocations = ["To Be Confirmed","Other","Zoom","Teams"];
+    })
+  }
+  scriptProperties.setProperty("dplocations", JSON.stringify(dplocations));
+  return dplocations;
 }
 
+/**
+ * Called by Meeting Poll functions to store options for text-based polls
+ * Stores: [(date)] 
+ *      each string is one poll option
+ * Example textoptions object: 
+ *    ["Tomorrow night","Next week"]
+ * @return {Object} The textoptions array
+ */
 function checkPropertyDPTextOptions(){
   var scriptProperties = PropertiesService.getUserProperties();
-  if (scriptProperties.getProperty("dptextoptions")===null){
-    var defaultdptextoptions = [];
-    scriptProperties.setProperty("dptextoptions", JSON.stringify(defaultdptextoptions));
+  textoptions = JSON.parse(scriptProperties.getProperty("dptextoptions"));
+  if (dptextoptions===null){ textoptions = []; }
+  else {
+    textoptions.forEach(function(value) {
+      if (typeof(value) != "string") textoptions = [];
+    })
   }
+  scriptProperties.setProperty("dptextoptions", JSON.stringify(textoptions));
+  return textoptions;
 }
 
+/**
+ * Called by Meeting Poll functions to store options for date-based polls
+ * Stores: [(date)] 
+ *      each value is a date object containing the start meeting time
+ * Example dateoptions object: 
+ *    [ { hasTime: true, msSinceEpoch: 1633777021106, hasDate: true },
+      { hasDate: true, hasTime: true, msSinceEpoch: 1633766400000 },
+      { hasTime: true, hasDate: true, msSinceEpoch: 1633914000000 } ]
+ * @return {Object} The dateoptions array
+ */
 function checkPropertyDPDateOptions(){
   var scriptProperties = PropertiesService.getUserProperties();
-  if (scriptProperties.getProperty("dpdateoptions")===null){
-    var defaultdpdateoptions = [];
-    scriptProperties.setProperty("dpdateoptions", JSON.stringify(defaultdpdateoptions));
+  dateoptions = JSON.parse(scriptProperties.getProperty("dpdateoptions"))
+  if (dateoptions===null){ dateoptions = []; }
+  else {
+    dateoptions.forEach(function(value) {
+      if (typeof(value) != "object" || value.hasDate == 'undefined') dateoptions = [];
+    })
   }
+  scriptProperties.setProperty("dpdateoptions", JSON.stringify(dateoptions));
+  return dateoptions;
 }
 
+/**
+ * Called by Meeting Poll functions to store the currently open polls
+ * Stores: [(string), (string), (Object), (string)] 
+ *      [0] google form id used to recieve google form object
+ *      [1] length of meeting in minutes
+ *      [2] array containing strings of respondents email addresses
+ *      [3] meeting location
+ * Example dpmanaging object: 
+ *    [[ '1YMxGy2jG2HwCLGN8HO6XRGTkYZ2YDkxqNGI839cc5_Q','60', [],'Zoom']]
+ * @return {Object} The dpmanaging array
+ */
 function getPropertyDPManaging(){
   var scriptProperties = PropertiesService.getUserProperties();
   dpmanaging = JSON.parse(scriptProperties.getProperty("dpmanaging"));
-  if (dpmanaging===null || (dpmanaging[0] === undefined || dpmanaging[0].length!=4)){
-    var defaultdpdateoptions = [];
-    scriptProperties.setProperty("dpmanaging", JSON.stringify(defaultdpdateoptions));
+  if (dpmanaging===null){ dpmanaging = [];}
+  else {
+    dpmanaging.forEach(function(value) {
+      // need to check that the google form id exists (has not been deleted by user through google forms)
+      if (value[0] == undefined || value[1] == undefined ||value[2] == undefined ||value[3] == undefined ){ 
+        dateoptions = [];
+      }
+    })
   }
-  return JSON.parse(scriptProperties.getProperty("dpmanaging"));
+  scriptProperties.setProperty("dpmanaging", JSON.stringify(dpmanaging));
+  return dpmanaging;
 }
 
 //--------------section for checking whether user is using the sidebar or composing section------------
@@ -219,10 +280,9 @@ function manageCustomButtonsCard(){
     .addWidget(snoozetimeinput)
     .addWidget(snoozetimesubmit)
     .setCollapsible(true);
-
-
+  
   /// recipient groups buttons
-  var recipientgroups = JSON.parse(scriptProperties.getProperty("recipientgroups"));
+  var recipientgroups = getPropertyrecipientgroups();
 
   var recipientgroupsButtonSet = CardService.newButtonSet();
   recipientgroups.forEach(function(value) {
@@ -280,17 +340,16 @@ function manageCustomButtonsCard(){
 
 
 //// doodle poll buttons
-  checkPropertyDPLocation();
-  var doodlepolllocations = JSON.parse(scriptProperties.getProperty("dplocations"));
+  var doodlepolllocations = getPropertyDPLocation();
   var doodlepollButtonSet = CardService.newButtonSet();
 
   doodlepolllocations.forEach(function(value) {
-    if (value[0] != "Other" && value[0] != "To Be Confirmed") {
+    if (value != "Other" && value != "To Be Confirmed") {
       var removeaction = CardService.newAction()
       .setFunctionName('removePropertiesServiceItem')
       .setParameters({name:"dplocations", item:JSON.stringify(value)});
       var button = CardService.newTextButton()
-        .setText(value[0])
+        .setText(value)
         .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
         .setOnClickAction(removeaction);
       doodlepollButtonSet.addButton(button);
@@ -347,7 +406,7 @@ function addNewRecipientGroup(e){
 
 function addNewQuickButton(e){
   console.log(e.formInput.addquickbuttoninput);
-  if (e.formInput.addquickbuttoninput > 0){
+  if (e.formInput.addquickbuttoninput > 0){ 
     getPropertyquicksnooze();
     addPropertiesServiceItem("quicksnooze", [e.formInput.addquickbuttoninput + " Hours", ""+e.formInput.addquickbuttoninput])
     return snoozeEmailCard(e);
@@ -358,8 +417,8 @@ function addNewQuickButton(e){
 function addQuickLocationButton(e){
   console.log(e.formInput.addQuickLocationInput);
   if (e.formInput.addQuickLocationInput == undefined) return;
-  checkPropertyDPLocation();
-  addPropertiesServiceItem("dplocations", [e.formInput.addQuickLocationInput, ""+e.formInput.addQuickLocationInput])
+  getPropertyDPLocation();
+  addPropertiesServiceItem("dplocations", e.formInput.addQuickLocationInput)
   return manageCustomButtonsCard(e);
 }
 
