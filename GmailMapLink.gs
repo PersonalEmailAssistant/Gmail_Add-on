@@ -80,10 +80,7 @@ function generalSection(e) {
 }
 
 function locationInput(e) {
-  getPropertymap();
-  var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
-  var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
-
+  var selectedlocation = getPropertymapselected()
   var locationInput = CardService.newTextInput()
     .setFieldName('location')
     .setTitle('Location Name')
@@ -94,9 +91,7 @@ function locationInput(e) {
 }
 
 function positionInput(e) {
-  getPropertymap();
-  var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
-  var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
+  var selectedlocation = getPropertymapselected()
   var positionInput = CardService.newTextInput()
     .setFieldName('position')
     .setTitle('Enter Location Address')
@@ -107,9 +102,7 @@ function positionInput(e) {
 }
 
 function massageInput(e) {
-  getPropertymap();
-  var scriptProperties = PropertiesService.getUserProperties(); // PropertiesService should allow for long-term storage
-  var selectedlocation = JSON.parse(scriptProperties.getProperty("mapselected"));
+  var selectedlocation = getPropertymapselected()
   var massageInput = CardService.newTextInput()
     .setFieldName('message')
     .setTitle('Message')
@@ -296,9 +289,8 @@ function setDefaultmapLocation(e){
 }
 
 function saveNewLocation(e){  
-  getPropertymap();
-  var scriptProperties = PropertiesService.getUserProperties(); // this should allow for long-term storage
-  var savedlocation = JSON.parse(scriptProperties.getProperty("map"));
+  var scriptProperties = PropertiesService.getUserProperties(); 
+  var savedlocation = getPropertymap();
   console.log(savedlocation)
   if(e.formInput.location == null || e.formInput.position == null){
     return CardService.newActionResponseBuilder()
@@ -325,12 +317,10 @@ function saveNewLocation(e){
     return CardService.newNavigation().updateCard(onGmailCompose())
   }
 }
-
+/*
 function deleteLocation(e){
-  getPropertymap();
   var scriptProperties = PropertiesService.getUserProperties(); // this should allow for long-term storage
-  var savedlocation = JSON.parse(scriptProperties.getProperty("map"));
-  console.log(savedlocation)
+  var savedlocation = getPropertymap();
   var message = "";
   if (e.formInput.message!=undefined) message = e.formInput.message;
   savedlocation.push([e.formInput.location,e.formInput.position, message])
@@ -344,3 +334,5 @@ function deleteLocation(e){
     return CardService.newNavigation().updateCard(onGmailCompose())
   }
 }
+*/
+

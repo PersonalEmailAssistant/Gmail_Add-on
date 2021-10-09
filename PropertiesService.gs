@@ -1,26 +1,74 @@
 //------------------------------- MANAGE PROPERTIESSERVICE STORAGE -------------------------------------
+/**
+ * PROPERTIESSERVICE:
+ * PropertiesServices used for long-term storage of user-specific values. 
+ * Functions retrieve stored values from PropertiesService.getUserProperties(), check that
+ * stored values are valid and then returns stored values
+*/
 
+
+/**
+ * Called by Map Link functions to retrieve the stored map link locations stored as a nested array
+ * Each location stores: [(string), (string), (string)]
+ *      [0] the name of location (will be the hyperlinked text and displayed on test button)
+ *      [1] the address of location (words or latitude and longitude, used to create the map with google API)
+ *      [2] an optional message ("" if no message is given)
+ * Example map object: 
+ *    [["UWA", "The University of Western Australia", ""],["Lunch Meeting Spot", "Matilda bay", "Meet at the restaurant"]]
+ * @return {Object} The stored map link locations nested array
+ */
 function getPropertymap(){
   var scriptProperties = PropertiesService.getUserProperties();
-  // if(scriptProperties.getProperty("map")===null || JSON.parse(scriptProperties.getProperty("map"))[0].length!=3){
-  if(scriptProperties.getProperty("map")===null){
-    var defaultsavedlocations = [["UWA", "The University of Western Australia"," "]]
-    // map stores all saved locations
-    scriptProperties.setProperty("map", JSON.stringify(defaultsavedlocations));
-    // mapselect is used to set the default values of map link
+  map = JSON.parse(scriptProperties.getProperty("map"));
+  if(map===null){
+    map = []
     scriptProperties.setProperty("mapselected", JSON.stringify(["","",""]));
   }
+  else {
+    // check every value is valid
+    map.forEach(function(value) {
+      if (value[0] == undefined || value[1] == undefined|| value[2] == undefined){
+        map = []; 
+        scriptProperties.setProperty("mapselected", JSON.stringify(["","",""]));
+      }
+    })
+  }
+  scriptProperties.setProperty("map", JSON.stringify(map));
+  return map
 }
 
+/**
+ * Called by Map Link functions to set the default values for maplink inputs
+ * Stores: [(string), (string), (string)]
+ *      [0] location name input 
+ *      [1] location address input
+ *      [2] message input
+ * Example map selected object: 
+ *    ["UWA", "The University of Western Australia", ""]
+ * @return {Object} The selected map link array
+ */
 function getPropertymapselected(){
   var scriptProperties = PropertiesService.getUserProperties();
-  mapselected = scriptProperties.getProperty("mapselected")
-  if(mapselected===null){
-    scriptProperties.setProperty("mapselected", JSON.stringify(["","",""]));
+  mapselected = JSON.parse(scriptProperties.getProperty("mapselected"));
+  if(mapselected===null){ mapselected = ["","",""]; }
+  else {
+    if (mapselected[0] == undefined || mapselected[1] == undefined || mapselected[2] == undefined){
+      mapselected = ["","",""];
+    }
   }
+  scriptProperties.setProperty("mapselected", JSON.stringify(mapselected));
   return mapselected
 }
 
+/**
+ * Called by Email Snooze functions to get quick custom time buttons stored as a nested array
+ * Each time stores: [(string), (string)]
+ *      [0] name of time to be displayed on button (usually: time in hours + " Hours")
+ *      [1] time in hours used to set the snooze timebased trigger
+ * Example quicksnooze object: 
+ *    [["30 Minutes","0.5"],["2 Hours","2"],["Tomorrow","24"],["Next Week","168"]]
+ * @return {Object} The quicksnooze nested array
+ */
 function getPropertyquicksnooze(){
   var scriptProperties = PropertiesService.getUserProperties();
   var quicksnooze = JSON.parse(scriptProperties.getProperty("quicksnooze"));
@@ -39,6 +87,15 @@ function getPropertyquicksnooze(){
   return quicksnooze
 }
 
+/**
+ * Called by Email Snooze functions to get quick custom recipient groups buttons stored as a nested array
+ * Each recipient group stores: [(string), (string)]
+ *      [0] name of recipient group to be displayed on button
+ *      [1] string of comma separated email addresses 
+ * Example recipientgroups object: 
+ *    [["Colleagues","example@uwa.edu.au, example1@uwa.edu.au, example2@uwa.edu.au"],["Family","example@gmail.com, example@gmail.com"]]
+ * @return {Object} The recipientgroups nested array
+ */
 function getPropertyrecipientgroups(){
   var scriptProperties = PropertiesService.getUserProperties();
   recipientgroups = JSON.parse(scriptProperties.getProperty("recipientgroups"))
@@ -53,6 +110,14 @@ function getPropertyrecipientgroups(){
   return recipientgroups
 }
 
+/**
+ * Called by Email Snooze functions to set default additional recipient input 
+ * Stores: (string)
+ *      of comma separated email addresses 
+ * Example selectedrecipients object: 
+ *    "example@uwa.edu.au, example1@uwa.edu.au, example2@uwa.edu.au"
+ * @return {String} The selectedrecipients string
+ */
 function getPropertySelectedSnoozeRecipients(){
   var scriptProperties = PropertiesService.getUserProperties();
   selectedrecipients = scriptProperties.getProperty("selectedrecipients")
