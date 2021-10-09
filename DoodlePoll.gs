@@ -1,5 +1,6 @@
 // Begin by building the root card with 1st section 'General Info'.
 function doodlePoll(e) {
+  PropertiesService.getUserProperties().deleteAllProperties();
   items = getPropertyDPManaging();
   console.log(items)
   if (items.length == 0){return createDoodlePoll(e);}
@@ -62,7 +63,7 @@ function createDoodlePoll(e){
 // Section 1
 var titleDPvar;
 var meetingLengthDPvar;
-var locationDPvar = "TBC"; // Default value of 'To Be Confirmed'
+var locationDPvar = 'To Be Confirmed';
 var otherLocationDPvar;
 var notesDPvar;
 
@@ -85,7 +86,8 @@ function generalInfoSection(e) {
     .addWidget(meetingLengthDP())
     .addWidget(notesDP())
     .addWidget(locationDP())
-    .addWidget(getManangeCustomButtons());
+    .addWidget(getManangeCustomButtons())
+    .addWidget(nextButtonDP1());
 
 
   return generalInfoSection;
@@ -115,7 +117,6 @@ function pollSettingsSection(e) {
     .setHeader("Step 3 of 3: Poll Settings")
     .addWidget(headerDP3())
     .addWidget(switchNotIdeal())
-    .addWidget(switchLimitVotes())
     .addWidget(switchSingleVote())
     .addWidget(switchHidden())
     .addWidget(switchResponses())
@@ -149,7 +150,8 @@ function headerDP1(e) {
 
 function headerDP2(e) {
   var decoratedText = CardService.newDecoratedText()
-    .setText("What are the Options?");
+    .setText("What are the Options? Please Select at least 2 options to continue.\n\nDuplicate options will be discarded.")
+    .setWrapText(true);;
   return decoratedText;
 }
 
@@ -162,7 +164,6 @@ function headerDP3(e) {
 // ---------------------------------- "NEXT" BUTTONS ------------------------------------
 
 function nextButtonDP1(e) {
-  console.log(e);
 
     var nextButton = CardService.newTextButton()
       .setText('Next')
@@ -212,39 +213,32 @@ function titleDP(e) {
     .setFieldName("titleDPvalue")
     .setTitle("Title of Meeting Poll")
     .setHint("Required")
-    .setOnChangeAction(CardService.newAction()
-      .setFunctionName('GeneralInfoCardUpdateDP'));
 
-  if (titleDPvar != null) {
-    titleDP.setValue(titleDPvar)
-  }
+  if (titleDPvar != null) titleDP.setValue(titleDPvar);
 
   return titleDP;
 }
 
 function meetingLengthDP(e) {
+
   var meetingLength = CardService.newTextInput()
     .setFieldName("meetingLengthDPvalue")
     .setTitle("Length of Meeting")
     .setHint("Required. Set in minutes. A 1 hour meeting is '60'.")
-    .setOnChangeAction(CardService.newAction()
-      .setFunctionName('GeneralInfoCardUpdateDP'));
 
-    if (meetingLengthDPvar != null) {
-      meetingLength.setValue(meetingLengthDPvar)
-    }
+  if (meetingLengthDPvar != null) meetingLength.setValue(meetingLengthDPvar);
 
   return meetingLength;
 }
 
 function locationDP(e) {
 
- var locationDP = CardService.newSelectionInput()
+  var locationDP = CardService.newSelectionInput()
     .setType(CardService.SelectionInputType.DROPDOWN)
     .setFieldName("locationDPvalue")
     .setTitle("Location")
     .setOnChangeAction(CardService.newAction()
-      .setFunctionName('GeneralInfoCardUpdateDP'));
+      .setFunctionName('updateLocationDP'));
 
   checkPropertyDPLocation();
   var scriptProperties = PropertiesService.getUserProperties();
@@ -263,12 +257,8 @@ function otherLocationDP(e) {
   var otherLocationDP = CardService.newTextInput()
     .setFieldName("otherLocationDPvalue")
     .setTitle("Other Location")
-    .setOnChangeAction(CardService.newAction()
-      .setFunctionName('GeneralInfoCardUpdateDP'));
 
-  if (otherLocationDPvar != null) {
-    otherLocationDP.setValue(otherLocationDPvar)
-  }
+  if (otherLocationDPvar != null) otherLocationDP.setValue(otherLocationDPvar)
 
   return otherLocationDP;
 }
@@ -279,12 +269,8 @@ function notesDP(e) {
     .setFieldName("notesDPvalue")
     .setTitle("Notes")
     .setHint("Optional. Provides a description for the poll.")
-    .setOnChangeAction(CardService.newAction()
-      .setFunctionName('GeneralInfoCardUpdateDP'));
 
-  if (notesDPvar != null) {
-    notesDP.setValue(notesDPvar)
-  }
+  if (notesDPvar != null) notesDP.setValue(notesDPvar)
 
   return notesDP;
 }
@@ -465,18 +451,6 @@ function switchNotIdeal() {
   return switchNotIdeal;
 }
 
-function switchLimitVotes() {
-
-  var switchLimitVotes = CardService.newDecoratedText()
-    .setTopLabel("Limit the Number of Votes per Option")
-    .setText("First come, first served. Once the spots are filled, the option is no longer available.")
-    .setWrapText(true)
-    .setSwitchControl(CardService.newSwitch()
-      .setFieldName("switchLimitVotesKey")
-      .setValue("switchNotIdealValue"));
-  return switchLimitVotes;
-}
-
 function switchSingleVote() {
 
   var switchSingleVote = CardService.newDecoratedText()
@@ -520,47 +494,40 @@ function switchResponses() {
 // ----------------------------- DOODLE POLL CARD UPDATES ----------------------------
 // -----------------------------------------------------------------------------------
 
-// Function runs on any updates to the general info section, excluding the optional notesDP value
-function GeneralInfoCardUpdateDP(e) {
-  // Update global variables
+function updateLocationDP(e) {
+
+  // UPDATE WIDGET VALUES
   titleDPvar = e.formInput.titleDPvalue;
-  if (!isNaN(e.formInput.meetingLengthDPvalue)) {
-    meetingLengthDPvar = e.formInput.meetingLengthDPvalue;
-  }
-  else meetingLengthDPvar = null;
+  meetingLengthDPvar = e.formInput.meetingLengthDPvalue;
   notesDPvar = e.formInput.notesDPvalue;
   locationDPvar = e.formInput.locationDPvalue;
-  //otherLocationDPvar = e.formInput.otherLocationDPvalue;
+  otherLocationDPvar = e.formInput.otherLocationDPvalue;
 
-  console.log(locationDPvar)
-  console.log(otherLocationDPvar)
-  if (locationDPvar == "Other"){locationDPvar=e.formInput.otherLocationDPvalue};
+  // UPDATE SECTION ACCORDING TO IF 'OTHER' LOCATION IS SELECTED OR
+  var updatedSection = CardService.newCardSection()
+      .setHeader("Step 1 of 3: General Information")
+      .addWidget(headerDP1())
+      .addWidget(titleDP())
+      .addWidget(meetingLengthDP())
+      .addWidget(notesDP())
+      .addWidget(locationDP())
 
-  var scriptProperties = CacheService.getUserCache();
-  scriptProperties.put("dptitle",e.formInput.titleDPvalue);
-  scriptProperties.put("dplength",e.formInput.meetingLengthDPvalue);
-  scriptProperties.put("dplocation",locationDPvar);
-  scriptProperties.put("dpnotes", e.formInput.notesDPvalue);
-
-  var updatedSection = generalInfoSection();
-
-  // If other location has been selected, add an "Other Location" input field
   if(e.formInput.locationDPvalue == "Other") {
-    updatedSection.addWidget(otherLocationDP());
+    updatedSection.addWidget(otherLocationDP())
+      .addWidget(getManangeCustomButtons())
+      .addWidget(nextButtonDP1());
+  }
+  else {
+    updatedSection.addWidget(getManangeCustomButtons())
+      .addWidget(nextButtonDP1());
   }
 
-  // If a title and meeting length has been entered, add a "Next" button
-  if (titleDPvar != null && meetingLengthDPvar != null) {
-    updatedSection.addWidget(nextButtonDP1(e))
-  }
-  // Update with a child card
   var card = CardService.newCardBuilder()
     .addSection(updatedSection)
     .setFixedFooter(buildPreviousAndRootButtonSet());
 
   return CardService.newNavigation().updateCard(card.build());
 }
-
 
 // Function runs on any updates to the Text Scheduling section
 function dateScheduleUpdateDP(e) {
@@ -677,12 +644,25 @@ function removeTextOption(e) {
 // -----------------------------------------------------------------------------------
 
 function ontoSection2 (e) {
-  dateUsedDP = true
-  var card = CardService.newCardBuilder()
-    .addSection(schedulingSection())
-    .setFixedFooter(buildPreviousAndRootButtonSet());
 
-  return CardService.newNavigation().updateCard(card.build());
+  if (e.formInput.titleDPvalue != null && e.formInput.meetingLengthDPvalue != null &&
+      !isNaN(e.formInput.meetingLengthDPvalue) &&
+      (e.formInput.locationDPvalue != 'Other' || e.formInput.otherLocationDPvalue != null)) {
+
+    // PUT VALUES INTO UserCache
+    var scriptProperties = CacheService.getUserCache();
+    scriptProperties.put("dptitle",e.formInput.titleDPvalue);
+    scriptProperties.put("dplength",e.formInput.meetingLengthDPvalue);
+    scriptProperties.put("dplocation",e.formInput.locationDPvalue);
+    scriptProperties.put("dpotherlocation",e.formInput.otherLocationDPvalue);
+    scriptProperties.put("dpnotes", e.formInput.notesDPvalue);
+
+    var card = CardService.newCardBuilder()
+      .addSection(schedulingSection())
+      .setFixedFooter(buildPreviousAndRootButtonSet());
+
+    return CardService.newNavigation().updateCard(card.build());
+  }
 }
 
 function ontoSection3 (e) {
@@ -695,11 +675,8 @@ function ontoSection3 (e) {
 }
 
 function completePoll (e) {
-  // somethings up with global variables because it doesnt have the stored value
-  // so i am using UserCache instead
-  console.log("Meeting length:");
-  console.log(meetingLengthDPvar);
-  ///
+
+  // RETRIEVE UserCache VALUES
   var scriptProperties = CacheService.getUserCache();
   var title = scriptProperties.get("dptitle");
   var meetinglength = scriptProperties.get("dplength");
@@ -709,8 +686,9 @@ function completePoll (e) {
   // Title / Description
   var form = FormApp.create(title)
     .setTitle(title)
-    .setDescription(notes);
-    //  .addParagraphTextItem()
+    .setDescription(notes)
+  form.addSectionHeaderItem()
+    .setTitle('Meeting Location: ' + meetinglocation);
 
   // If only 1 vote allowed, provide radio buttons
   if (e.formInput.switchSingleVoteKey) {

@@ -1,7 +1,7 @@
 //------------------------------- MANAGE PROPERTIESSERVICE STORAGE -------------------------------------
 /**
  * PROPERTIESSERVICE:
- * PropertiesServices used for long-term storage of user-specific values. 
+ * PropertiesServices used for long-term storage of user-specific values.
  * Functions retrieve stored values from PropertiesService.getUserProperties(), check that
  * stored values are valid and then returns stored values
 */
@@ -13,7 +13,7 @@
  *      [0] the name of location (will be the hyperlinked text and displayed on test button)
  *      [1] the address of location (words or latitude and longitude, used to create the map with google API)
  *      [2] an optional message ("" if no message is given)
- * Example map object: 
+ * Example map object:
  *    [["UWA", "The University of Western Australia", ""],["Lunch Meeting Spot", "Matilda bay", "Meet at the restaurant"]]
  * @return {Object} The stored map link locations nested array
  */
@@ -28,7 +28,7 @@ function getPropertymap(){
     // check every value is valid
     map.forEach(function(value) {
       if (value[0] == undefined || value[1] == undefined|| value[2] == undefined){
-        map = []; 
+        map = [];
         scriptProperties.setProperty("mapselected", JSON.stringify(["","",""]));
       }
     })
@@ -40,10 +40,10 @@ function getPropertymap(){
 /**
  * Called by Map Link functions to set the default values for maplink inputs
  * Stores: [(string), (string), (string)]
- *      [0] location name input 
+ *      [0] location name input
  *      [1] location address input
  *      [2] message input
- * Example map selected object: 
+ * Example map selected object:
  *    ["UWA", "The University of Western Australia", ""]
  * @return {Object} The selected map link array
  */
@@ -65,7 +65,7 @@ function getPropertymapselected(){
  * Each time stores: [(string), (string)]
  *      [0] name of time to be displayed on button (usually: time in hours + " Hours")
  *      [1] time in hours used to set the snooze timebased trigger
- * Example quicksnooze object: 
+ * Example quicksnooze object:
  *    [["30 Minutes","0.5"],["2 Hours","2"],["Tomorrow","24"],["Next Week","168"]]
  * @return {Object} The quicksnooze nested array
  */
@@ -91,8 +91,8 @@ function getPropertyquicksnooze(){
  * Called by Email Snooze functions to get quick custom recipient groups buttons stored as a nested array
  * Each recipient group stores: [(string), (string)]
  *      [0] name of recipient group to be displayed on button
- *      [1] string of comma separated email addresses 
- * Example recipientgroups object: 
+ *      [1] string of comma separated email addresses
+ * Example recipientgroups object:
  *    [["Colleagues","example@uwa.edu.au, example1@uwa.edu.au, example2@uwa.edu.au"],["Family","example@gmail.com, example@gmail.com"]]
  * @return {Object} The recipientgroups nested array
  */
@@ -111,10 +111,10 @@ function getPropertyrecipientgroups(){
 }
 
 /**
- * Called by Email Snooze functions to set default additional recipient input 
+ * Called by Email Snooze functions to set default additional recipient input
  * Stores: (string)
- *      of comma separated email addresses 
- * Example selectedrecipients object: 
+ *      of comma separated email addresses
+ * Example selectedrecipients object:
  *    "example@uwa.edu.au, example1@uwa.edu.au, example2@uwa.edu.au"
  * @return {String} The selectedrecipients string
  */
@@ -130,7 +130,7 @@ function getPropertySelectedSnoozeRecipients(){
 function checkPropertyDPLocation(){
   var scriptProperties = PropertiesService.getUserProperties();
   if (scriptProperties.getProperty("dplocations")===null){
-    var defaultdplocations = [["To Be Confirmed","TBC"],["Other", "Other"],["Zoom","Zoom"],["Teams", "Teams"]];
+    var defaultdplocations = [["To Be Confirmed","To Be Confirmed"],["Other", "Other"],["Zoom","Zoom"],["Teams", "Teams"]];
     scriptProperties.setProperty("dplocations", JSON.stringify(defaultdplocations));
   }
 }
@@ -347,7 +347,7 @@ function addNewRecipientGroup(e){
 
 function addNewQuickButton(e){
   console.log(e.formInput.addquickbuttoninput);
-  if (e.formInput.addquickbuttoninput > 0){ 
+  if (e.formInput.addquickbuttoninput > 0){
     getPropertyquicksnooze();
     addPropertiesServiceItem("quicksnooze", [e.formInput.addquickbuttoninput + " Hours", ""+e.formInput.addquickbuttoninput])
     return snoozeEmailCard(e);
@@ -383,4 +383,3 @@ function removePropertiesServiceItem(e){
   scriptProperties.setProperty(e.parameters.name, JSON.stringify(newarray));
   return manageCustomButtonsCard(e);
 }
-
