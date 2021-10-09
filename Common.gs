@@ -216,8 +216,8 @@ var resetAction = CardService.newAction()
   var resetPropertiesServicebutton = CardService.newTextButton()
     .setText('Reset All User Specific Data')
     .setOnClickAction(resetAction);
-  var resetSection = CardService.newCardSection()
-    .addWidget(resetPropertiesServicebutton).setCollapsible(true);
+  //var resetSection = CardService.newCardSection()
+   // .addWidget(resetPropertiesServicebutton).setCollapsible(true);
 
 if (isOnHomepage == true) {
   var section = CardService.newCardSection()
@@ -227,6 +227,7 @@ if (isOnHomepage == true) {
   .addWidget(buttonSetMapLink)
   .addWidget(buttonSetDoodlePoll)
   .addWidget(message)
+  .addWidget(resetPropertiesServicebutton)
   .setCollapsible(true)
   .setNumUncollapsibleWidgets(6);
 } else {
@@ -238,6 +239,7 @@ if (isOnHomepage == true) {
   .addWidget(buttonSetMapLink)
   .addWidget(buttonSetDoodlePoll)
   .addWidget(message)
+  .addWidget(resetPropertiesServicebutton)
   .setCollapsible(true)
   .setNumUncollapsibleWidgets(6);
 }
