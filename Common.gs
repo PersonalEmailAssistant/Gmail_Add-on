@@ -260,7 +260,7 @@ return CardService.newCardBuilder()
 )
 
 .addSection(section)
-.addSection(resetSection)
+//.addSection(resetSection)
 .setFixedFooter(footer)
 .build();
 }
