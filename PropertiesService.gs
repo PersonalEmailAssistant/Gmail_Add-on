@@ -448,15 +448,4 @@ function removePropertiesServiceItem(e){
 }
 
 
-function resetAllPropertiesService(){
-  var scriptProperties = PropertiesService.getUserProperties();
-  scriptProperties.setProperty("map", JSON.stringify([]));
-  scriptProperties.setProperty("mapselected", JSON.stringify(["","",""]));
-  scriptProperties.setProperty("quicksnooze", JSON.stringify([["30 Minutes","0.5"],["2 Hours","2"],["Tomorrow","24"],["Next Week","168"]]));
-  scriptProperties.setProperty("recipientgroups", JSON.stringify([]));
-  scriptProperties.setProperty("selectedrecipients", " ");
-  scriptProperties.setProperty("dplocations", JSON.stringify(["To Be Confirmed","Other","Zoom","Teams"]));
-  scriptProperties.setProperty("dptextoptions", JSON.stringify([]));
-  scriptProperties.setProperty("dpdateoptions", JSON.stringify([]));
-  scriptProperties.setProperty("dpmanaging", JSON.stringify([]));
-}
+function resetAllPropertiesService(){ PropertiesService.getUserProperties().deleteAllProperties(); }
