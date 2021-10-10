@@ -1,6 +1,7 @@
 // Begin by building the root card with 1st section 'General Info'.
 function doodlePoll(e) {
-  PropertiesService.getUserProperties().deleteAllProperties();
+  // Line below removes all user properties, to-do: make a button for this
+  //PropertiesService.getUserProperties().deleteAllProperties();
   items = getPropertyDPManaging();
 
   // Reset UserCache
