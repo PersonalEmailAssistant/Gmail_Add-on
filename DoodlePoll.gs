@@ -316,18 +316,21 @@ function schedulingButtons(e) {
 }
 
 function dateSelectorDP(e) {
+  var userProperties = CacheService.getUserCache();
+  settime = new Date(userProperties.get("calendardate"));
 
   var dateSelector = CardService.newDateTimePicker()
       .setTitle("Option")
       .setFieldName("dateSelectorKey")
+      .setValueInMsSinceEpoch(settime.getTime())
       .setOnChangeAction(CardService.newAction()
         .setFunctionName("checkCalendarAvailability"));
 
 
   dateOptions = getPropertyDPDateOptions();
 
-  if (dateOptions.length == 0) dateSelector.setValueInMsSinceEpoch(new Date().getTime());
-  else dateSelector.setValueInMsSinceEpoch(dateOptions[dateOptions.length-1].msSinceEpoch);
+  //if (dateOptions.length == 0) dateSelector.setValueInMsSinceEpoch(new Date().getTime());
+  //else dateSelector.setValueInMsSinceEpoch(dateOptions[dateOptions.length-1].msSinceEpoch);
 
   return dateSelector;
 }
@@ -609,6 +612,7 @@ function dateScheduleUpdateDP(e) {
     .addSection(dateScheduleSection)
     .addSection(buildCalendarAvailabilityCard(dateinput))
     .setFixedFooter(buildPreviousAndRootButtonSet());
+  console.log("here just before")
   return CardService.newNavigation().updateCard(card.build());
 }
 
@@ -716,6 +720,8 @@ function ontoSection2 (e) {
     userCache.put("dpotherlocation",e.formInput.otherLocationDPvalue);
     userCache.put("dpnotes", e.formInput.notesDPvalue);
 
+    console.log(now.getDate())
+    console.log(Utilities.formatDate(now, userTimeZone, 'MMMM dd, yyyy HH:mm:ss Z'))
     userCache.put("calendardate", Utilities.formatDate(now, userTimeZone, 'MMMM dd, yyyy HH:mm:ss Z'));
 
     return dateScheduleUpdateDP(e);
