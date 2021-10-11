@@ -320,15 +320,31 @@ function dateSelectorDP(e) {
   var dateSelector = CardService.newDateTimePicker()
       .setTitle("Option")
       .setFieldName("dateSelectorKey")
+      .setOnChangeAction(CardService.newAction()
+        .setFunctionName("checkCalendarAvailability"));
 
-  checkPropertyDPDateOptions();
-  var userProperties = PropertiesService.getUserProperties();
-  dateOptions = JSON.parse(userProperties.getProperty("dpdateoptions"));
+
+  dateOptions = getPropertyDPDateOptions();
 
   if (dateOptions.length == 0) dateSelector.setValueInMsSinceEpoch(new Date().getTime());
   else dateSelector.setValueInMsSinceEpoch(dateOptions[dateOptions.length-1].msSinceEpoch);
 
   return dateSelector;
+}
+
+function checkCalendarAvailability(e){
+  console.log(e);
+  //  formInput: { dateSelectorKey: { hasTime: true, msSinceEpoch: 1634036220000, hasDate: true } },
+  inputdate = new Date(e.formInput.dateSelectorKey.msSinceEpoch)
+  console.log(inputdate)
+  var events = CalendarApp.getDefaultCalendar().getEventsForDay(inputdate);
+  console.log(events.length)
+  events.forEach(function(value) {
+      console.log(value)
+      console.log(value.getTitle())
+      console.log(value.getStartTime())
+      console.log(value.getEndTime())
+  })
 }
 
 function addDateOptionButtonDP(e) {
@@ -343,9 +359,7 @@ function addDateOptionButtonDP(e) {
 }
 
 function formatDatesDP(e) {
-  checkPropertyDPDateOptions();
-  var userProperties = PropertiesService.getUserProperties();
-  dateOptions = JSON.parse(userProperties.getProperty("dpdateoptions"));
+  dateOptions = getPropertyDPDateOptions();
 
   var userProperties = CacheService.getUserCache();
   var meetinglength = userProperties.get("dplength");
@@ -389,9 +403,7 @@ function showDateOptionDP(e) {
 
   var formattedText = ''
 
-  checkPropertyDPDateOptions();
-  var userProperties = PropertiesService.getUserProperties();
-  textoptions = JSON.parse(userProperties.getProperty("dpdateoptions"));
+  textoptions = getPropertyDPDateOptions();
 
   textoptions.forEach(function(value) {
     time = new Date(value.msSinceEpoch);
@@ -439,8 +451,8 @@ function removeOptionDP(e) {
   if (userCache.get("dpdateused")) {
     removeOption.setOnChangeAction(CardService.newAction()
       .setFunctionName('removeDateOption'));
-    checkPropertyDPDateOptions();
-    options = JSON.parse(userProperties.getProperty("dpdateoptions"));
+
+    options = getPropertyDPDateOptions();
     options.forEach(function(value) {
       time = new Date(value.msSinceEpoch);
       //https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
@@ -554,11 +566,10 @@ function updateLocationDP(e) {
   return CardService.newNavigation().updateCard(card.build());
 }
 
-// Function runs on any updates to the Text Scheduling section
+// Function runs on any updates to the Date Scheduling section
 function dateScheduleUpdateDP(e) {
   var userCache = CacheService.getUserCache();
   userCache.put("dpdateused", true)
-
 
   var dateScheduleSection = CardService.newCardSection()
     .addWidget(meetingLengthDP())
@@ -612,9 +623,8 @@ function textScheduleUpdateDP(e) {
 }
 
 function addDateOption(e) {
-  checkPropertyDPDateOptions();
   var userProperties = PropertiesService.getUserProperties();
-  var dateoptions = JSON.parse(userProperties.getProperty("dpdateoptions"));
+  var dateoptions = getPropertyDPDateOptions();
   var inlist = false;
   dateoptions.forEach(function(value) {
     if (value.msSinceEpoch == e.formInput.dateSelectorKey.msSinceEpoch) {
@@ -625,7 +635,7 @@ function addDateOption(e) {
     dateoptions.push(e.formInput.dateSelectorKey);
     userProperties.setProperty("dpdateoptions", JSON.stringify(dateoptions));
   }
-  return dateScheduleUpdateDP();
+  return dateScheduleUpdateDP(e);
 }
 
 function addTextOption(e) {
@@ -649,8 +659,7 @@ function addTextOption(e) {
 
 function removeDateOption(e) {
   var userProperties = PropertiesService.getUserProperties();
-  checkPropertyDPDateOptions();
-  dateoptions = JSON.parse(userProperties.getProperty("dpdateoptions"));
+  dateoptions = getPropertyDPDateOptions();
   newerlist = [];
   dateoptions.forEach(function(value) {
     formattedValue = Utilities.formatDate(new Date(value.msSinceEpoch), userTimeZone, "EEE, MMM dd, hh:mm a");
@@ -659,7 +668,7 @@ function removeDateOption(e) {
     }
   })
   userProperties.setProperty("dpdateoptions", JSON.stringify(newerlist));
-  return dateScheduleUpdateDP();
+  return dateScheduleUpdateDP(e);
 }
 
 function removeTextOption(e) {
@@ -689,7 +698,7 @@ function ontoSection2 (e) {
     userCache.put("dpotherlocation",e.formInput.otherLocationDPvalue);
     userCache.put("dpnotes", e.formInput.notesDPvalue);
 
-    return dateScheduleUpdateDP();
+    return dateScheduleUpdateDP(e);
   }
 }
 
