@@ -333,18 +333,24 @@ function dateSelectorDP(e) {
 }
 
 function checkCalendarAvailability(e){
-  console.log(e);
-  //  formInput: { dateSelectorKey: { hasTime: true, msSinceEpoch: 1634036220000, hasDate: true } },
-  inputdate = new Date(e.formInput.dateSelectorKey.msSinceEpoch)
+  var userProperties = CacheService.getUserCache();
+  userProperties.put("calendardate", e.formInput.dateSelectorKey.msSinceEpoch);
+  return dateScheduleUpdateDP(e);
+}
+
+function buildCalendarAvailabilityCard(msSinceEpoch){
+  var inputdate = new Date(msSinceEpoch);
   console.log(inputdate)
-  var events = CalendarApp.getDefaultCalendar().getEventsForDay(inputdate);
-  console.log(events.length)
+  var events = CalendarApp.getDefaultCalendar().getEventsForDay(inputdate );
+  section = CardService.newCardSection();
   events.forEach(function(value) {
-      console.log(value)
-      console.log(value.getTitle())
-      console.log(value.getStartTime())
-      console.log(value.getEndTime())
+    starttime = Utilities.formatDate(value.getStartTime().getMilliseconds, userTimeZone, "EEE, MMM dd YYYY, hh:mm a");
+    endtime = Utilities.formatDate(value.getEndTime(), userTimeZone, "EEE, MMM dd YYYY, hh:mm a");
+    var eventtext = CardService.newTextParagraph()
+      .setText(value.getTitle()+"\n From:"+starttime+"\n Until: "+endtime+"\n");
+    section.addWidget(eventtext);
   })
+  return section
 }
 
 function addDateOptionButtonDP(e) {
@@ -585,10 +591,13 @@ function dateScheduleUpdateDP(e) {
   if (JSON.parse(userProperties.getProperty("dpdateoptions")).length >= 2) {
     dateScheduleSection.addWidget(nextButtonDP2());
   }
+  // check calendar
+  dateinput = userCache.get("calendardate");
 
   var card = CardService.newCardBuilder()
     .addSection(schedulingSection())
     .addSection(dateScheduleSection)
+    .addSection(buildCalendarAvailabilityCard(dateinput))
     .setFixedFooter(buildPreviousAndRootButtonSet());
 
   return CardService.newNavigation().updateCard(card.build());
@@ -697,6 +706,8 @@ function ontoSection2 (e) {
     userCache.put("dplocation",e.formInput.locationDPvalue);
     userCache.put("dpotherlocation",e.formInput.otherLocationDPvalue);
     userCache.put("dpnotes", e.formInput.notesDPvalue);
+
+    userCache.put("calendardate", now.getMilliseconds);
 
     return dateScheduleUpdateDP(e);
   }
