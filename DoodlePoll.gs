@@ -9,7 +9,6 @@ function doodlePoll(e) {
   userCache.put("dplength",null);
   userCache.put("dplocation",null);
   userCache.put("dpotherlocation",null);
-  userCache.put("dpnotes",null);
   userCache.put("dpdateused", true)
 
   if (items.length == 0){return createDoodlePoll(e);}
@@ -344,22 +343,22 @@ function checkCalendarAvailability(e){
 
 function buildCalendarAvailabilityCard(msSinceEpoch){
   section = CardService.newCardSection();
-  console.log(msSinceEpoch)
   var inputdate = new Date(msSinceEpoch);
-  console.log(inputdate)
   var events = CalendarApp.getDefaultCalendar().getEventsForDay(inputdate);
+  var datetext = CardService.newTextParagraph()
+      .setText("Calendar Events for "+ Utilities.formatDate(inputdate, userTimeZone, "MMM dd YYYY"));
+  section.addWidget(datetext);
   
   events.forEach(function(value) {
     starttime = Utilities.formatDate(value.getStartTime(), userTimeZone, "EEE, MMM dd YYYY, hh:mm a");
     endtime = Utilities.formatDate(value.getEndTime(), userTimeZone, "EEE, MMM dd YYYY, hh:mm a");
     var eventtext = CardService.newTextParagraph()
-      .setText(value.getTitle()+"\n From:"+starttime+"\n Until: "+endtime+"\n");
-    console.log(eventtext)
+      .setText(value.getTitle()+"\n From: "+starttime+"\n Until: "+endtime+"\n");
     section.addWidget(eventtext);
   })
   if (events.length == 0){
     var eventtext = CardService.newTextParagraph()
-      .setText("You do not have any event");
+      .setText("You do not have any events");
     section.addWidget(eventtext)
   }
   return section;
@@ -612,7 +611,6 @@ function dateScheduleUpdateDP(e) {
     .addSection(dateScheduleSection)
     .addSection(buildCalendarAvailabilityCard(dateinput))
     .setFixedFooter(buildPreviousAndRootButtonSet());
-  console.log("here just before")
   return CardService.newNavigation().updateCard(card.build());
 }
 
