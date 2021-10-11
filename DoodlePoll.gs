@@ -430,7 +430,7 @@ function showDateOptionDP(e) {
 function showTextOptionDP(e) {
 
   var formattedText = ''
-  checkPropertyDPTextOptions();
+  getPropertyDPTextOptions();
   var userProperties = PropertiesService.getUserProperties();
   textoptions = JSON.parse(userProperties.getProperty("dptextoptions"));
   textoptions.forEach(function(value) {
@@ -469,7 +469,7 @@ function removeOptionDP(e) {
   else {
     removeOption.setOnChangeAction(CardService.newAction()
       .setFunctionName('removeTextOption'));
-    checkPropertyDPTextOptions();
+    getPropertyDPTextOptions();
     options = JSON.parse(userProperties.getProperty("dptextoptions"));
     options.forEach(function(value) {
       removeOption.addItem(value, value, false)
@@ -576,6 +576,7 @@ function updateLocationDP(e) {
 function dateScheduleUpdateDP(e) {
   var userCache = CacheService.getUserCache();
   userCache.put("dpdateused", true)
+  userCache.put("dplength", e.formInput.meetingLengthDP)
 
   var dateScheduleSection = CardService.newCardSection()
     .addWidget(meetingLengthDP())
@@ -648,7 +649,7 @@ function addDateOption(e) {
 }
 
 function addTextOption(e) {
-  checkPropertyDPTextOptions();
+  getPropertyDPTextOptions();
   var userProperties = PropertiesService.getUserProperties();
   textoptions = JSON.parse(userProperties.getProperty("dptextoptions"));
   var inlist = false;
@@ -682,7 +683,7 @@ function removeDateOption(e) {
 
 function removeTextOption(e) {
   var userProperties = PropertiesService.getUserProperties();
-  checkPropertyDPTextOptions();
+  getPropertyDPTextOptions();
   textoptions = JSON.parse(userProperties.getProperty("dptextoptions"));
   textoptions.pop(e.formInput.removeOptionDPvalue);
   userProperties.setProperty("dptextoptions", JSON.stringify(textoptions));
