@@ -334,23 +334,32 @@ function dateSelectorDP(e) {
 
 function checkCalendarAvailability(e){
   var userProperties = CacheService.getUserCache();
-  userProperties.put("calendardate", e.formInput.dateSelectorKey.msSinceEpoch);
+  date = Utilities.formatDate(new Date(e.formInput.dateSelectorKey.msSinceEpoch), userTimeZone, 'MMMM dd, yyyy HH:mm:ss Z')
+  userProperties.put("calendardate", date);
   return dateScheduleUpdateDP(e);
 }
 
 function buildCalendarAvailabilityCard(msSinceEpoch){
+  section = CardService.newCardSection();
+  console.log(msSinceEpoch)
   var inputdate = new Date(msSinceEpoch);
   console.log(inputdate)
-  var events = CalendarApp.getDefaultCalendar().getEventsForDay(inputdate );
-  section = CardService.newCardSection();
+  var events = CalendarApp.getDefaultCalendar().getEventsForDay(inputdate);
+  
   events.forEach(function(value) {
-    starttime = Utilities.formatDate(value.getStartTime().getMilliseconds, userTimeZone, "EEE, MMM dd YYYY, hh:mm a");
+    starttime = Utilities.formatDate(value.getStartTime(), userTimeZone, "EEE, MMM dd YYYY, hh:mm a");
     endtime = Utilities.formatDate(value.getEndTime(), userTimeZone, "EEE, MMM dd YYYY, hh:mm a");
     var eventtext = CardService.newTextParagraph()
       .setText(value.getTitle()+"\n From:"+starttime+"\n Until: "+endtime+"\n");
+    console.log(eventtext)
     section.addWidget(eventtext);
   })
-  return section
+  if (events.length == 0){
+    var eventtext = CardService.newTextParagraph()
+      .setText("You do not have any event");
+    section.addWidget(eventtext)
+  }
+  return section;
 }
 
 function addDateOptionButtonDP(e) {
@@ -600,7 +609,6 @@ function dateScheduleUpdateDP(e) {
     .addSection(dateScheduleSection)
     .addSection(buildCalendarAvailabilityCard(dateinput))
     .setFixedFooter(buildPreviousAndRootButtonSet());
-
   return CardService.newNavigation().updateCard(card.build());
 }
 
@@ -708,7 +716,7 @@ function ontoSection2 (e) {
     userCache.put("dpotherlocation",e.formInput.otherLocationDPvalue);
     userCache.put("dpnotes", e.formInput.notesDPvalue);
 
-    userCache.put("calendardate", now.getMilliseconds);
+    userCache.put("calendardate", Utilities.formatDate(now, userTimeZone, 'MMMM dd, yyyy HH:mm:ss Z'));
 
     return dateScheduleUpdateDP(e);
   }
