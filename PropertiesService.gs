@@ -22,14 +22,14 @@ function getPropertymap(){
   map = JSON.parse(scriptProperties.getProperty("map"));
   if(map===null){
     map = []
-    scriptProperties.setProperty("mapselected", JSON.stringify(["","",""]));
+    //scriptProperties.setProperty("mapselected", JSON.stringify(["","",""]));
   }
   else {
     // check every value is valid
     map.forEach(function(value) {
       if (value[0] == undefined || value[1] == undefined || value[2] == undefined){
         map = []; 
-        scriptProperties.setProperty("mapselected", JSON.stringify(["","",""]));
+        //scriptProperties.setProperty("mapselected", JSON.stringify(["","",""]));
       }
     })
   }
@@ -185,7 +185,7 @@ function checkPropertyDPTextOptions(){
       { hasTime: true, hasDate: true, msSinceEpoch: 1633914000000 } ]
  * @return {Object} The dateoptions array
  */
-function checkPropertyDPDateOptions(){
+function getPropertyDPDateOptions(){
   var scriptProperties = PropertiesService.getUserProperties();
   dateoptions = JSON.parse(scriptProperties.getProperty("dpdateoptions"))
   if (dateoptions===null){ dateoptions = []; }
