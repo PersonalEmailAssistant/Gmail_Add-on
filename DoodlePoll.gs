@@ -1,7 +1,6 @@
 // Begin by building the root card with 1st section 'General Info'.
 function doodlePoll(e) {
-  // Line below removes all user properties, to-do: make a button for this
-  //PropertiesService.getUserProperties().deleteAllProperties();
+  // PropertiesService.getUserProperties().deleteAllProperties();
   items = getPropertyDPManaging();
 
   // Reset UserCache
@@ -27,12 +26,13 @@ function doodlePoll(e) {
   var card = CardService.newCardBuilder()
     .setHeader(CardService.newCardHeader().setTitle("Doodle Polls"))
     .addSection(section);
-
+  console.log(items)
+  var i = 0;
   items.forEach(function(formarray) {
     formid = formarray[0]
     section = CardService.newCardSection();
     form = FormApp.openById(formid);
-    rows = form.getItems()[0].asGridItem().getRows();
+    rows = form.getItems()[1].asGridItem().getRows();
     buttonSet = CardService.newButtonSet();
     rows.forEach(function(value){
       var button = CardService.newTextButton().setText("- "+value)
@@ -40,15 +40,19 @@ function doodlePoll(e) {
         .setFunctionName('bookMeetingCard').setParameters({time: value, formid: formid}));
       buttonSet.addButton(button);})
 
-    var text1 = CardService.newTextParagraph().setText("View poll results: <a href="+form.getSummaryUrl()+">"+form.getSummaryUrl()+"</a> \n\nClick time to close poll and book meeting:");
-    var text2 = CardService.newTextParagraph().setText("Or close poll without booking meeting: ")
+    var text1 = CardService.newTextParagraph().setText("View poll results: <a href="+form.getSummaryUrl()+">"+form.getSummaryUrl()+"</a>");
+    var text2 = CardService.newTextParagraph().setText("Click time to close poll and book meeting:");
+    var text3 = CardService.newTextParagraph().setText("Or close poll without booking meeting: ")
     var button2 = CardService.newTextButton().setText("Close poll")
         .setOnClickAction(CardService.newAction()
         .setFunctionName('closeDoodlePoll').setParameters({formid: formid}));
 
     section.setHeader("Meeting Poll: "+form.getItems()[0].getTitle());
-    section.addWidget(text1).addWidget(buttonSet).addWidget(text2).addWidget(button2);
+    section.addWidget(text1)
+    if (typeof items[i][1] === 'string') section.addWidget(text2).addWidget(buttonSet);
+    section.addWidget(text3).addWidget(button2);
     card.addSection(section);
+    i += 1;
   })
 
   card.setFixedFooter(buildPreviousAndRootButtonSet());
@@ -80,12 +84,10 @@ function generalInfoSection(e) {
     .setHeader("Step 1 of 3: General Information")
     .addWidget(headerDP1())
     .addWidget(titleDP())
-    .addWidget(meetingLengthDP())
     .addWidget(notesDP())
     .addWidget(locationDP())
     .addWidget(getManangeCustomButtons())
     .addWidget(nextButtonDP1());
-
 
   return generalInfoSection;
 }
@@ -100,11 +102,12 @@ function schedulingSection(e) {
     .addWidget(schedulingButtons())
 
   var userCache = CacheService.getUserCache();
-  if (userCache.get("dpdateused")) {
+  console.log(userCache.get("dpdateused"))
+  if (userCache.get("dpdateused") == true) {
+    console.log('test')
     schedulingSection.addWidget(dateSelectorDP())
       .addWidget(addDateOptionButtonDP());
   }
-
 
   return schedulingSection;
 }
@@ -141,14 +144,14 @@ function pollSettingsSection(e) {
 function headerDP1(e) {
   var decoratedText = CardService.newDecoratedText()
     .setText("What's the Occasion?")
-    .setText("These details cover the general info of the poll. Title and Meeting Length are required.")
+    .setText("These details cover the general info of the poll. Title is required.")
     .setWrapText(true);
   return decoratedText;
 }
 
 function headerDP2(e) {
   var decoratedText = CardService.newDecoratedText()
-    .setText("What are the Options? Please Select at least 2 options to continue.\n\nDuplicate options will be discarded.")
+    .setText("What are the Options? Please Select at least 2 distinct options to continue.\n\nMeeting Length required for Date Options.")
     .setWrapText(true);;
   return decoratedText;
 }
@@ -522,26 +525,15 @@ function updateLocationDP(e) {
   // PUT VALUES INTO UserCache
   var userCache = CacheService.getUserCache();
   userCache.put("dptitle",e.formInput.titleDPvalue);
-  userCache.put("dplength",e.formInput.meetingLengthDPvalue);
   userCache.put("dplocation",e.formInput.locationDPvalue);
   userCache.put("dpotherlocation",e.formInput.otherLocationDPvalue);
   userCache.put("dpnotes", e.formInput.notesDPvalue);
-
-  /*
-  // UPDATE WIDGET VALUES
-  titleDPvar = e.formInput.titleDPvalue;
-  meetingLengthDPvar = e.formInput.meetingLengthDPvalue;
-  notesDPvar = e.formInput.notesDPvalue;
-  locationDPvar = e.formInput.locationDPvalue;
-  otherLocationDPvar = e.formInput.otherLocationDPvalue;
-  */
 
   // UPDATE SECTION ACCORDING TO IF 'OTHER' LOCATION IS SELECTED OR
   var updatedSection = CardService.newCardSection()
       .setHeader("Step 1 of 3: General Information")
       .addWidget(headerDP1())
       .addWidget(titleDP())
-      .addWidget(meetingLengthDP())
       .addWidget(notesDP())
       .addWidget(locationDP())
 
@@ -567,10 +559,15 @@ function dateScheduleUpdateDP(e) {
   var userCache = CacheService.getUserCache();
   userCache.put("dpdateused", true)
 
+
   var dateScheduleSection = CardService.newCardSection()
+    .addWidget(meetingLengthDP())
+    .addWidget(dateSelectorDP())
+    .addWidget(addDateOptionButtonDP())
     .addWidget(showDateOptionDP())
 
   var userProperties = PropertiesService.getUserProperties();
+
   if (JSON.parse(userProperties.getProperty("dpdateoptions")).length >= 1) {
     dateScheduleSection.addWidget(removeOptionDP());
   }
@@ -679,35 +676,36 @@ function removeTextOption(e) {
 // ------------------------------- SECTION CHANGERS -----------------------------------
 // -----------------------------------------------------------------------------------
 
+
+
 function ontoSection2 (e) {
 
-  if (e.formInput.titleDPvalue != null && e.formInput.meetingLengthDPvalue != null &&
-      !isNaN(e.formInput.meetingLengthDPvalue) &&
-      (e.formInput.locationDPvalue != 'Other' || e.formInput.otherLocationDPvalue != null)) {
+  if (e.formInput.titleDPvalue != null && (e.formInput.locationDPvalue != 'Other' || e.formInput.otherLocationDPvalue != null)) {
 
     // PUT VALUES INTO UserCache
     var userCache = CacheService.getUserCache();
     userCache.put("dptitle",e.formInput.titleDPvalue);
-    userCache.put("dplength",e.formInput.meetingLengthDPvalue);
     userCache.put("dplocation",e.formInput.locationDPvalue);
     userCache.put("dpotherlocation",e.formInput.otherLocationDPvalue);
     userCache.put("dpnotes", e.formInput.notesDPvalue);
 
-    var card = CardService.newCardBuilder()
-      .addSection(schedulingSection())
-      .setFixedFooter(buildPreviousAndRootButtonSet());
-
-    return CardService.newNavigation().updateCard(card.build());
+    return dateScheduleUpdateDP();
   }
 }
 
 function ontoSection3 (e) {
 
-  var card = CardService.newCardBuilder()
-    .addSection(pollSettingsSection())
-    .setFixedFooter(buildPreviousAndRootButtonSet());
+  var userCache = CacheService.getUserCache();
+  var dateused = userCache.get("dpdateused");
 
-  return CardService.newNavigation().updateCard(card.build());
+  if (dateused =='false' || (!isNaN(e.formInput.meetingLengthDPvalue) && e.formInput.meetingLengthDPvalue > 0)) {
+    userCache.put("dplength",e.formInput.meetingLengthDPvalue);
+    var card = CardService.newCardBuilder()
+      .addSection(pollSettingsSection())
+      .setFixedFooter(buildPreviousAndRootButtonSet());
+
+    return CardService.newNavigation().updateCard(card.build());
+  }
 }
 
 function completePoll (e) {
@@ -732,23 +730,28 @@ function completePoll (e) {
       .setTitle('Meeting Location: ' + otherlocation);
   }
 
+  console.log("Date Used: " + dateused)
+
+  // RETRIEVE UserProperties VALUES
+  var userProperties = PropertiesService.getUserProperties();
+  checkPropertyDPTextOptions();
+  textOptions = JSON.parse(userProperties.getProperty("dptextoptions"));
+
   // If only 1 vote allowed, provide radio buttons
   if (e.formInput.switchSingleVoteKey) {
     pollItem = form.addMultipleChoiceItem()
       .setTitle("Which meeting time suits?")
       .setHelpText("Only one choice allowed.")
       .showOtherOption(true);
-    if (dateused) {
-      pollItem.setChoiceValues( formatDatesDP(e) )
-    } else {
-      pollItem.setChoiceValues( textOptions )
-    }
+    if (dateused == 'true') pollItem.setChoiceValues( formatDatesDP(e) )
+    else pollItem.setChoiceValues( textOptions )
   }
   // If multiple votes are allowed, provide checkboxes
   else {
     var pollItem = form.addGridItem()
       .setTitle("Which meeting time suits?")
-      .setRows( formatDatesDP(e) )
+    if (dateused == 'true') pollItem.setRows( formatDatesDP(e) )
+    else pollItem.setRows( textOptions )
     // If 'Not Ideal' switch active
     if (e.formInput.switchNotIdealkey) {
       pollItem.setColumns([
