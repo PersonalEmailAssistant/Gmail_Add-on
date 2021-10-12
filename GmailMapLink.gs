@@ -1,4 +1,7 @@
-//this callback function rendering ML UI on the composing section
+/**
+ * this callback function rendering ML UI on the composing section
+ * @return the card object rendered on the Composing Section
+ */
 function onGmailCompose(e) {
   onComposing();
   var card = CardService.newCardBuilder()
@@ -8,7 +11,10 @@ function onGmailCompose(e) {
   return card.build();
 }
 
-//this callback function rendering ML UI on the sidebar
+/**
+ * this callback function rendering ML UI on the sidebar
+ * @return the card object rendered on the sidebar
+ */
 function onGmailSideBarML(e) {
   onSideBar();
   var card = CardService.newCardBuilder()
@@ -18,6 +24,10 @@ function onGmailSideBarML(e) {
   return card.build();
 }
 
+/**
+ * the function for rendering the saved location buttons
+ * @return a section contain buttons of saved locations
+ */
 function mapSavedSection(e) {
   // add buttons with saved locations
   var savedlocation = getPropertymap();
@@ -54,6 +64,10 @@ function mapSavedSection(e) {
   return mapsavedSection;
 }
 
+/**
+ * this function put all the text input and function sections together
+ * @return the generalsection of maplink
+ */
 function generalSection(e) {
   
   var generalSection = CardService.newCardSection()
@@ -69,7 +83,7 @@ function generalSection(e) {
     .setHeader('Map Link')
     .addWidget(locationInput())
     .addWidget(positionInput())
-    .addWidget(massageInput())
+    .addWidget(messageInput())
     .addWidget(inserting())
     .addWidget(addLocationButton())
     ;
@@ -77,6 +91,11 @@ function generalSection(e) {
   return generalSection;
 }
 
+
+/**
+ * render the locations input field
+ * @return the text input widget
+ */
 function locationInput(e) {
   var selectedlocation = getPropertymapselected()
   var locationInput = CardService.newTextInput()
@@ -88,6 +107,10 @@ function locationInput(e) {
   return locationInput; 
 }
 
+/**
+ * render the position input field
+ * @return the text input widget
+ */
 function positionInput(e) {
   var selectedlocation = getPropertymapselected()
   var positionInput = CardService.newTextInput()
@@ -99,22 +122,30 @@ function positionInput(e) {
   return positionInput; 
 }
 
-function massageInput(e) {
+/**
+ * render the message input field
+ * @return the message input widget
+ */
+function messageInput(e) {
   var selectedlocation = getPropertymapselected()
   console.log(selectedlocation)
-  var massageInput = CardService.newTextInput()
+  var messageInput = CardService.newTextInput()
     .setFieldName('message')
     .setTitle('Message')
     .setHint('Optional');
 
   //null may occur since message isn't required for saving location
   if (selectedlocation[2] != null) {
-    massageInput.setValue(selectedlocation[2]);
+    messageInput.setValue(selectedlocation[2]);
   }
 
-  return massageInput; 
+  return messageInput; 
 }
 
+/**
+ * render the two function buttons(link & map)
+ * @return the buttons set 
+ */
 function inserting(e) {
 
   var text = ['', ''];
@@ -149,18 +180,10 @@ function inserting(e) {
   return buttonSet;
 }
 
-function deleteLocationButton(e) {
-    var deleteLocationButton = CardService.newTextButton()
-        .setText('Delete Location')
-        .setBackgroundColor("#EA3323")
-        .setOnClickAction(
-          CardService.newAction()
-            .setFunctionName('deleteLocation'))
-        .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
-
-    return deleteLocationButton;
-}
-
+/**
+ * rendering the savelocation button
+ * @return the save location button widget
+ */
 function addLocationButton(e) {
     var addLocationButton = CardService.newTextButton()
         .setText('Save Location')
@@ -283,6 +306,11 @@ function onGmailInsertMap(e) {
   return response;
 }
 
+/**
+ * Callback for set default map location
+ * @param {Object} e The event object.
+ * @return update the original card with corresponding card
+ */
 function setDefaultmapLocation(e){
   var scriptProperties = PropertiesService.getUserProperties();
   scriptProperties.setProperty("mapselected", JSON.stringify([e.parameters.name,e.parameters.coordinates, e.parameters.message]));
@@ -293,6 +321,11 @@ function setDefaultmapLocation(e){
   }
 }
 
+/**
+ * Callback for saving new locations.
+ * @param {Object} e The event object.
+ * @return return update the original card with corresponding card.
+ */
 function saveNewLocation(e){  
   var scriptProperties = PropertiesService.getUserProperties(); 
   var savedlocation = getPropertymap();
