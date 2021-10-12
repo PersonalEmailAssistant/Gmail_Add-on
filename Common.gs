@@ -215,6 +215,8 @@ var resetAction = CardService.newAction()
   .setFunctionName("resetAllPropertiesService")
   var resetPropertiesServicebutton = CardService.newTextButton()
     .setText('Reset All User Specific Data')
+    .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+    .setBackgroundColor("#EA3323")
     .setOnClickAction(resetAction);
   //var resetSection = CardService.newCardSection()
    // .addWidget(resetPropertiesServicebutton).setCollapsible(true);
@@ -266,8 +268,14 @@ return CardService.newCardBuilder()
 }
 
 /**
- *  Create a ButtonSet with two buttons: one that backtracks to the
- *  last card and another that returns to the original (root) card.
+ *  This function is used to create footer in the add-on.
+ *  note: this function needs to work with card object instead of (update card)
+ *  'Back' will return the previous 'card' in the card stack
+ *  'Home' will return the top 'card' in the card stack
+ *  Create a ButtonSet with those two buttons above.
+ *  Example: var card = CardService.newCardBuilder()
+ *             .setFixedFooter(buildPreviousAndRootButtonSet());
+ *           return card.build()
  *  @return {ButtonSet}
  */
 function buildPreviousAndRootButtonSet() {
