@@ -155,8 +155,10 @@ var onSubmitAction = CardService.newAction()
 .setParameters(onSearchInput)
 .setLoadIndicator(CardService.LoadIndicator.SPINNER);
 
-var banner = CardService.newImage()
-    .setImageUrl('https://image.freepik.com/free-vector/hello-word-memphis-background_136321-401.jpg');
+var scriptProperties = PropertiesService.getUserProperties();
+scriptProperties.setProperty("selectedrecipients", "");
+//var banner = CardService.newImage()
+//    .setImageUrl('https://image.freepik.com/free-vector/hello-word-memphis-background_136321-401.jpg');
 
 var message = CardService.newTextParagraph()
     .setText("Can't find the function you are looking for?" +
@@ -223,7 +225,7 @@ var resetAction = CardService.newAction()
 
 if (isOnHomepage == true) {
   var section = CardService.newCardSection()
-  .addWidget(banner)
+  //.addWidget(banner)
   .addWidget(searchField)
   .addWidget(submitButton)
   .addWidget(buttonSetMapLink)
@@ -231,10 +233,10 @@ if (isOnHomepage == true) {
   .addWidget(message)
   .addWidget(resetPropertiesServicebutton)
   .setCollapsible(true)
-  .setNumUncollapsibleWidgets(6);
+  .setNumUncollapsibleWidgets(5);
 } else {
   var section = CardService.newCardSection()
-  .addWidget(banner)
+  //.addWidget(banner)
   .addWidget(searchField)
   .addWidget(submitButton)
   .addWidget(buttonSetSnooze)
@@ -243,7 +245,7 @@ if (isOnHomepage == true) {
   .addWidget(message)
   .addWidget(resetPropertiesServicebutton)
   .setCollapsible(true)
-  .setNumUncollapsibleWidgets(6);
+  .setNumUncollapsibleWidgets(5);
 }
 
 if (opt_error) {

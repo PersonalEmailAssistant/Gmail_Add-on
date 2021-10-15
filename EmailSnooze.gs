@@ -69,7 +69,7 @@ function snoozeEmailCard(e) {
     section.addWidget(btnSet.addButton(snoozeButton));
   }
   section.addWidget(recipienttxt)
-    .addWidget(snoozeAddRecipients(e.formInput.snoozerecipients))
+    .addWidget(snoozeAddRecipients(e))
     .addWidget(emailSnoozeRecipientGroupsButtons())
     .addWidget(getManangeCustomButtons());
 
@@ -140,17 +140,19 @@ function snoozeDateTimePicker() {
  *  the user input is not reset each time
  * @return {CardService.Card} The TextInput widget
  */
-function snoozeAddRecipients(recipients){
-  var selectedrecipients = getPropertySelectedSnoozeRecipients();
-  if (recipients != null){
-    if (recipients.includes(selectedrecipients)) selectedrecipients = recipients
-    else selectedrecipients = recipients + selectedrecipients
-  } 
+function snoozeAddRecipients(e){
+  console.log(e)
+  recipients = e.formInput.snoozerecipients
+  if (recipients == undefined) recipients = ""
+  var scriptProperties = PropertiesService.getUserProperties();
+  selectedrecipients = getPropertySelectedSnoozeRecipients();
+  if (selectedrecipients != "") recipients += selectedrecipients
+  scriptProperties.setProperty("selectedrecipients", "");
   var addrecipients = CardService.newTextInput()
     .setFieldName("snoozerecipients")
     .setTitle("Enter comma separated email addresses")
     .setMultiline(true)
-    .setValue(selectedrecipients);
+    .setValue(recipients);
   return addrecipients;
 }
 
@@ -177,7 +179,7 @@ function snoozeTimer(e, date){
   // stores email information so that it can be used by forwardEmail later and clears selectedrecipients
   var id = trigger.getUniqueId();
   var scriptProperties = PropertiesService.getScriptProperties();
-  scriptProperties.setProperty("selectedrecipients", " ");
+  scriptProperties.setProperty("selectedrecipients", "");
   scriptProperties.setProperty(id, e.gmail.messageId);
 
   // check if the user has entered additional recipients to recieve snoozed email
@@ -286,8 +288,10 @@ function emailSnoozeRecipientGroupsButtons(){
  * @return {CardService.Card} snoozeEmailCard() (to update display)
  */
 function emailSnoozeRecipientGroupsAction(e){
+  if (e.parameters.recipients == undefined) return;
   var scriptProperties = PropertiesService.getUserProperties();
-  getPropertySelectedSnoozeRecipients()
   scriptProperties.setProperty("selectedrecipients", e.parameters.recipients);
+  console.log("selected snooze recipients");
+  console.log(e.parameters.recipients);
   return snoozeEmailCard(e)
 }
