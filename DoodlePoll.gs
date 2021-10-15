@@ -30,6 +30,7 @@ function doodlePoll(e) {
   items.forEach(function(formarray) {
     formid = formarray[0]
     section = CardService.newCardSection();
+    console.log(FormApp.openById(formid))
     form = FormApp.openById(formid);
     rows = form.getItems()[1].asGridItem().getRows();
     buttonSet = CardService.newButtonSet();
@@ -46,7 +47,7 @@ function doodlePoll(e) {
         .setOnClickAction(CardService.newAction()
         .setFunctionName('closeDoodlePoll').setParameters({formid: formid}));
 
-    section.setHeader("Meeting Poll: "+form.getItems()[0].getTitle());
+    section.setHeader("Meeting Poll: "+form.getTitle());
     section.addWidget(text1)
     if (typeof items[i][1] === 'string') section.addWidget(text2).addWidget(buttonSet);
     section.addWidget(text3).addWidget(button2);
@@ -336,6 +337,9 @@ function dateSelectorDP(e) {
 
 function checkCalendarAvailability(e){
   var userProperties = CacheService.getUserCache();
+
+  if (e.formInput.meetingLengthDPvalue != undefined) userProperties.put("dplength",e.formInput.meetingLengthDPvalue);
+
   date = Utilities.formatDate(new Date(e.formInput.dateSelectorKey.msSinceEpoch), userTimeZone, 'MMMM dd, yyyy HH:mm:ss Z')
   userProperties.put("calendardate", date);
   return dateScheduleUpdateDP(e);
@@ -587,7 +591,6 @@ function updateLocationDP(e) {
 function dateScheduleUpdateDP(e) {
   var userCache = CacheService.getUserCache();
   userCache.put("dpdateused", true)
-  userCache.put("dplength", e.formInput.meetingLengthDP)
 
   var dateScheduleSection = CardService.newCardSection()
     .addWidget(meetingLengthDP())
@@ -767,7 +770,7 @@ function completePoll (e) {
 
   // RETRIEVE UserProperties VALUES
   var userProperties = PropertiesService.getUserProperties();
-  checkPropertyDPTextOptions();
+  getPropertyDPTextOptions();
   textOptions = JSON.parse(userProperties.getProperty("dptextoptions"));
 
   // If only 1 vote allowed, provide radio buttons
