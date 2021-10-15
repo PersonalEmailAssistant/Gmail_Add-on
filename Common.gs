@@ -9,11 +9,11 @@ function messageChooser(e) {
   console.log(hour);
   var message;
   if (hour >= 6 && hour < 12) {
-    message = 'Good Morning';
+    message = "Good Morning, Here's Today's Calendar";
   } else if (hour >= 12 && hour < 18) {
-    message = 'Good Afternoon';
+    message = "Good Afternoon, Here's Today's Calendar";
   } else {
-    message = 'Good Evening';
+    message = "Good Evening, Here's Today's Calendar";
   }
   console.log(message);
   return message;
@@ -125,148 +125,147 @@ function onSearch(event) {
 * @return {Card} Card to display
 */
 function buildSearchCard_(e, isOnHomepage, opt_error) {
+  if (isOnHomepage == true) {
+    var searchField = CardService.newTextInput()
+    .setFieldName("query")
+    .setSuggestions(CardService.newSuggestions()
+      .addSuggestion('Map link')
+      .addSuggestion('Doodle poll'))
+    .setHint("Name of functions")
+    .setTitle("What can I do for you today?"); 
+  } else {
+    var searchField = CardService.newTextInput()
+    .setFieldName("query")
+    .setSuggestions(CardService.newSuggestions()
+      .addSuggestion('Snooze')
+      .addSuggestion('Map link')
+      .addSuggestion('Doodle poll'))
+    .setHint("Name of functions")
+    .setTitle("What can I do for you today?");
+  }
 
-if (isOnHomepage == true) {
-  var searchField = CardService.newTextInput()
-  .setFieldName("query")
-  .setSuggestions(CardService.newSuggestions()
-    .addSuggestion('Map link')
-    .addSuggestion('Doodle poll'))
-  .setHint("Name of functions")
-  .setTitle("What can I do for you today?"); 
-} else {
-  var searchField = CardService.newTextInput()
-  .setFieldName("query")
-  .setSuggestions(CardService.newSuggestions()
-    .addSuggestion('Snooze')
-    .addSuggestion('Map link')
-    .addSuggestion('Doodle poll'))
-  .setHint("Name of functions")
-  .setTitle("What can I do for you today?");
-}
+  var onSearchInput = {isOnhomePage: 'false'}
+  if (isOnHomepage == true) {
+    onSearchInput = {isOnhomePage: 'true'}
+  }
 
-var onSearchInput = {isOnhomePage: 'false'}
-if (isOnHomepage == true) {
-  onSearchInput = {isOnhomePage: 'true'}
-}
+  var onSubmitAction = CardService.newAction()
+  .setFunctionName("onSearch")
+  .setParameters(onSearchInput)
+  .setLoadIndicator(CardService.LoadIndicator.SPINNER);
 
-var onSubmitAction = CardService.newAction()
-.setFunctionName("onSearch")
-.setParameters(onSearchInput)
-.setLoadIndicator(CardService.LoadIndicator.SPINNER);
+  var scriptProperties = PropertiesService.getUserProperties();
+  scriptProperties.setProperty("selectedrecipients", "");
+  //var banner = CardService.newImage()
+  //    .setImageUrl('https://image.freepik.com/free-vector/hello-word-memphis-background_136321-401.jpg');
+  calendarsection = buildHomepageCalendarAvailability(now.getTime());
 
-var scriptProperties = PropertiesService.getUserProperties();
-scriptProperties.setProperty("selectedrecipients", "");
-//var banner = CardService.newImage()
-//    .setImageUrl('https://image.freepik.com/free-vector/hello-word-memphis-background_136321-401.jpg');
+  var message = CardService.newTextParagraph()
+      .setText("Can't find the function you are looking for?" +
+                "Select/Open an email " + 
+                "or head to Calendar/Gmail to see more!")
 
-var message = CardService.newTextParagraph()
-    .setText("Can't find the function you are looking for?" +
-              "Select/Open an email " + 
-              "or head to Calendar/Gmail to see more!")
+  var info = messageChooser(e);
 
-var info = messageChooser(e);
+  var submitButton = CardService.newTextButton()
+  .setText("Search")
+  .setOnClickAction(onSubmitAction)
+  .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
 
-var submitButton = CardService.newTextButton()
-.setText("Search")
-.setOnClickAction(onSubmitAction)
-.setTextButtonStyle(CardService.TextButtonStyle.FILLED);
+  //------------image infront of each button------------------------------------------------
+  var action = CardService.newAction()
+    .setFunctionName('easterEgg');
+  var imageButton = CardService.newImageButton()
+  .setIconUrl("https://media.istockphoto.com/photos/smiley-face-drawing-picture-id157527255")
+  .setOnClickAction(action);
+  //---------------------------------------------------------------------------------------
 
-//------------image infront of each button------------------------------------------------
-var action = CardService.newAction()
-  .setFunctionName('easterEgg');
-var imageButton = CardService.newImageButton()
-.setIconUrl("https://media.istockphoto.com/photos/smiley-face-drawing-picture-id157527255")
-.setOnClickAction(action);
-//---------------------------------------------------------------------------------------
+  // Doodle Poll - Main menu selection
+  var doodlePoll = CardService.newAction()
+        .setFunctionName('doodlePoll');
 
-// Doodle Poll - Main menu selection
-var doodlePoll = CardService.newAction()
-      .setFunctionName('doodlePoll');
+  var doodlePollButton = CardService.newTextButton()
+    .setText('Doodle Poll')
+    .setOnClickAction(doodlePoll);
 
-var doodlePollButton = CardService.newTextButton()
-  .setText('Doodle Poll')
-  .setOnClickAction(doodlePoll);
-
-var buttonSetDoodlePoll = CardService.newButtonSet()
-  .addButton(imageButton)
-  .addButton(doodlePollButton);
+  var buttonSetDoodlePoll = CardService.newButtonSet()
+    .addButton(imageButton)
+    .addButton(doodlePollButton);
 
 
-var buttonSetMapLink = CardService.newButtonSet()
-  .addButton(imageButton)
-  .addButton(
-    CardService.newTextButton()
-      .setText('Map Link')
-      .setOnClickAction(
-        CardService.newAction()
-          .setFunctionName('onGmailSideBarML'))
-  );
-
-var buttonSetSnooze = CardService.newButtonSet()
+  var buttonSetMapLink = CardService.newButtonSet()
     .addButton(imageButton)
     .addButton(
       CardService.newTextButton()
-        .setText('Snooze')
+        .setText('Map Link')
         .setOnClickAction(
           CardService.newAction()
-            .setFunctionName('snoozeEmailCard'))
+            .setFunctionName('onGmailSideBarML'))
     );
 
-var resetAction = CardService.newAction()
-  .setFunctionName("resetAllPropertiesService")
-  var resetPropertiesServicebutton = CardService.newTextButton()
-    .setText('Reset All User Specific Data')
-    .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
-    .setBackgroundColor("#EA3323")
-    .setOnClickAction(resetAction);
-  //var resetSection = CardService.newCardSection()
-   // .addWidget(resetPropertiesServicebutton).setCollapsible(true);
+  var buttonSetSnooze = CardService.newButtonSet()
+      .addButton(imageButton)
+      .addButton(
+        CardService.newTextButton()
+          .setText('Snooze')
+          .setOnClickAction(
+            CardService.newAction()
+              .setFunctionName('snoozeEmailCard'))
+      );
 
-if (isOnHomepage == true) {
-  var section = CardService.newCardSection()
-  //.addWidget(banner)
-  .addWidget(searchField)
-  .addWidget(submitButton)
-  .addWidget(buttonSetMapLink)
-  .addWidget(buttonSetDoodlePoll)
-  .addWidget(message)
-  .addWidget(resetPropertiesServicebutton)
-  .setCollapsible(true)
-  .setNumUncollapsibleWidgets(5);
-} else {
-  var section = CardService.newCardSection()
-  //.addWidget(banner)
-  .addWidget(searchField)
-  .addWidget(submitButton)
-  .addWidget(buttonSetSnooze)
-  .addWidget(buttonSetMapLink)
-  .addWidget(buttonSetDoodlePoll)
-  .addWidget(message)
-  .addWidget(resetPropertiesServicebutton)
-  .setCollapsible(true)
-  .setNumUncollapsibleWidgets(5);
-}
+  var resetAction = CardService.newAction()
+    .setFunctionName("resetAllPropertiesService")
+    var resetPropertiesServicebutton = CardService.newTextButton()
+      .setText('Reset All User Specific Data')
+      .setTextButtonStyle(CardService.TextButtonStyle.FILLED)
+      .setBackgroundColor("#EA3323")
+      .setOnClickAction(resetAction);
+    //var resetSection = CardService.newCardSection()
+    // .addWidget(resetPropertiesServicebutton).setCollapsible(true);
 
-if (opt_error) {
-  var message = CardService.newTextParagraph()
-  .setText("Note: " + opt_error);
-  section.addWidget(message);
-}
+  if (isOnHomepage == true) {
+    var section = CardService.newCardSection()
+    //.addWidget(banner)
+    .addWidget(searchField)
+    .addWidget(submitButton)
+    .addWidget(buttonSetMapLink)
+    .addWidget(buttonSetDoodlePoll)
+    .addWidget(message)
+    .addWidget(resetPropertiesServicebutton)
+    .setCollapsible(true)
+    .setNumUncollapsibleWidgets(5);
+  } else {
+    var section = CardService.newCardSection()
+    //.addWidget(banner)
+    .addWidget(searchField)
+    .addWidget(submitButton)
+    .addWidget(buttonSetSnooze)
+    .addWidget(buttonSetMapLink)
+    .addWidget(buttonSetDoodlePoll)
+    .addWidget(message)
+    .addWidget(resetPropertiesServicebutton)
+    .setCollapsible(true)
+    .setNumUncollapsibleWidgets(5);
+  }
 
-var footer = buildPreviousAndRootButtonSet();
+  if (opt_error) {
+    var message = CardService.newTextParagraph()
+    .setText("Note: " + opt_error);
+    section.addWidget(message);
+  }
 
-return CardService.newCardBuilder()
-.setHeader(
-  CardService.newCardHeader()
-    .setTitle('Welcome to Personal Assistant')
-    .setSubtitle(info + ' :)')
-)
+  var footer = buildPreviousAndRootButtonSet();
 
-.addSection(section)
-//.addSection(resetSection)
-.setFixedFooter(footer)
-.build();
+  return CardService.newCardBuilder()
+  .setHeader(
+    CardService.newCardHeader()
+      .setTitle('Welcome to Personal Assistant')
+      .setSubtitle(info)
+  )
+  .addSection(calendarsection)
+  .addSection(section)
+  .setFixedFooter(footer)
+  .build();
 }
 
 /**
@@ -316,3 +315,24 @@ function gotoRootCard() {
   
 var now = new Date();
 var userTimeZone = CalendarApp.getDefaultCalendar().getTimeZone();
+
+function buildHomepageCalendarAvailability(msSinceEpoch){
+  section = CardService.newCardSection();
+  var inputdate = new Date(msSinceEpoch);
+  var events = CalendarApp.getDefaultCalendar().getEventsForDay(inputdate);
+  if (events.length == 0){
+    var eventtext = CardService.newTextParagraph()
+      .setText("You do not have any calendar events for today");
+    section.addWidget(eventtext)
+  }
+  else {
+    events.forEach(function(value) {
+      starttime = Utilities.formatDate(value.getStartTime(), userTimeZone, "hh:mm a");
+      endtime = Utilities.formatDate(value.getEndTime(), userTimeZone, "hh:mm a");
+      var eventtext = CardService.newTextParagraph()
+        .setText(" "+value.getTitle()+" from "+starttime+" - "+endtime+"\n");
+      section.addWidget(eventtext);
+    })
+  }
+  return section;
+}

@@ -354,10 +354,10 @@ function buildCalendarAvailabilityCard(msSinceEpoch){
   section.addWidget(datetext);
   
   events.forEach(function(value) {
-    starttime = Utilities.formatDate(value.getStartTime(), userTimeZone, "EEE, MMM dd YYYY, hh:mm a");
-    endtime = Utilities.formatDate(value.getEndTime(), userTimeZone, "EEE, MMM dd YYYY, hh:mm a");
+    starttime = Utilities.formatDate(value.getStartTime(), userTimeZone, "hh:mm a");
+    endtime = Utilities.formatDate(value.getEndTime(), userTimeZone, "hh:mm a");
     var eventtext = CardService.newTextParagraph()
-      .setText(value.getTitle()+"\n From: "+starttime+"\n Until: "+endtime+"\n");
+      .setText(" "+value.getTitle()+" from "+starttime+" - "+endtime+"\n");
     section.addWidget(eventtext);
   })
   if (events.length == 0){
