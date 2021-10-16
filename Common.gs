@@ -25,11 +25,11 @@ function messageChooser(e) {
 function easterEgg(e) {
   var info = messageChooser(e)
   var message;
-  if (info == 'Good Morning') {
+  if (info == "Good Morning, Here's Today's Calendar") {
     message = 'Have a good day:))';
-  } else if (info == 'Good Afternoon') {
+  } else if (info == "Good Afternoon, Here's Today's Calendar") {
     message = 'Pleasant afternoon^_^';
-  } else if (info == 'Good Evening'){
+  } else if (info == "Good Evening, Here's Today's Calendar"){
     message = 'It is been a long day. Have a good rest!';
   }
   var notification = CardService.newNotification().setText(message)
