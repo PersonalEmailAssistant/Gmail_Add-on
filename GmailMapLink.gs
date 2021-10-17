@@ -69,9 +69,12 @@ function mapSavedSection(e) {
  * @return the generalsection of maplink
  */
 function generalSection(e) {
+  var descriptiontxt = CardService.newTextParagraph()
+    .setText("Create a link or image of a map with the location address which can be added to emails");
   
   var generalSection = CardService.newCardSection()
     .setHeader('Map Link')
+    .addWidget(descriptiontxt)
     .addWidget(locationInput())
     .addWidget(positionInput())
     .addWidget(inserting())

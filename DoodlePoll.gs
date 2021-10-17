@@ -18,14 +18,18 @@ function doodlePoll(e) {
       .setFunctionName('createDoodlePoll'))
       .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
 
+  var descriptiontxt = CardService.newTextParagraph()
+    .setText("Create and manage meeting polls to find a time that works best for all meeting participants.");
+
   var section = CardService.newCardSection()
-    .addWidget(button1)
-    .addWidget(CardService.newDivider());
+    .setHeader("Meeting Polls")
+    .addWidget(descriptiontxt)
+    .addWidget(CardService.newDivider())
+    .addWidget(button1);
 
   var card = CardService.newCardBuilder()
-    .setHeader(CardService.newCardHeader().setTitle("Doodle Polls"))
     .addSection(section);
-  console.log(items)
+
   var i = 0;
   items.forEach(function(formarray) {
     formid = formarray[0]
