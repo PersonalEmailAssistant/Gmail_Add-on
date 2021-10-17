@@ -30,8 +30,18 @@ function snoozeEmailCard(e) {
     .setText("Snoozing emails temporarily removes them from the inbox and, after a set period of time, returns them to the top of the inbox. \n\nClick a time to snooze email: ");
   var explanationtxt = CardService.newTextParagraph()
     .setText("\nOr choose your own time below: ")
-  var recipienttxt = CardService.newTextParagraph()
-    .setText("\n(Optional) Include additional recipients: ");
+
+  var advancedoptionstxt = CardService.newTextParagraph()
+    .setText("Advanced Options");
+  //var recipienttxt = CardService.newTextParagraph()
+  //  .setText("\n(Optional) Include additional recipients: ");
+
+  var recipienttxt = switchDecoratedText  = CardService.newDecoratedText()
+    .setText("(Optional) Include additional recipients:")
+    .setWrapText(true)
+    .setSwitchControl(CardService.newSwitch()
+      .setFieldName("additionalrecipients")
+      .setValue(true));
 
   // Button Actions
   // action calls snoozeTimer to create a time-based trigger
@@ -68,16 +78,8 @@ function snoozeEmailCard(e) {
   } else {
     section.addWidget(btnSet.addButton(snoozeButton));
   }
-  section.addWidget(recipienttxt)
-    .addWidget(snoozeAddRecipients(e))
-    .addWidget(emailSnoozeRecipientGroupsButtons())
-    .addWidget(getManangeCustomButtons())
-    .setCollapsible(true)
-    .setNumUncollapsibleWidgets(6);
 
   // send response email
-  var responsetxt = CardService.newTextParagraph()
-    .setText("(Optional) Send reply email to let them know you will get back to them:");
   var responseupdateaction = CardService.newAction()
       .setFunctionName('updateResponseField');
   responseemailbody = getPropertySnoozeResponseEmail();
@@ -98,8 +100,15 @@ function snoozeEmailCard(e) {
       //    .setFunctionName("handleSwitchChange")));
 
   var section2 = CardService.newCardSection()
+    .addWidget(advancedoptionstxt)
+    .addWidget(recipienttxt)
+    .addWidget(snoozeAddRecipients(e))
+    .addWidget(emailSnoozeRecipientGroupsButtons())
+    .addWidget(getManangeCustomButtons())
     .addWidget(sendreplyoption)
-    .addWidget(responseinput);
+    .addWidget(responseinput)
+    .setCollapsible(true)
+    .setNumUncollapsibleWidgets(1);
   
   var footer = buildPreviousAndRootButtonSet();
   var card = CardService.newCardBuilder()

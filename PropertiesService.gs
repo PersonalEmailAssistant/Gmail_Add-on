@@ -139,15 +139,15 @@ function getPropertySelectedSnoozeRecipients(){
  */
 function getPropertySnoozeResponseEmail(){
   var scriptProperties = PropertiesService.getUserProperties();
-  selectedrecipients = scriptProperties.getProperty("snoozeresponseemail")
-  if (selectedrecipients===null){ 
-    selectedrecipients = "Hi, \nThank you for your email. I will get back to you soon!"; 
+  replyemail = scriptProperties.getProperty("snoozeresponseemail")
+  if (replyemail===null){ 
+    replyemail = "Hi, \nThank you for your email. I will get back to you soon!"; 
   }
-  else if (typeof(selectedrecipients) != "string") { 
-    selectedrecipients = "Hi, \nThank you for your email. I will get back to you soon!"; 
+  else if (typeof(replyemail) != "string") { 
+    replyemail= "Hi, \nThank you for your email. I will get back to you soon!"; 
   }
-  scriptProperties.setProperty("selectedrecipients", selectedrecipients);
-  return selectedrecipients
+  scriptProperties.setProperty("snoozeresponseemail", replyemail);
+  return replyemail
 }
 
 /**
