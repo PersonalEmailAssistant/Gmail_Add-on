@@ -31,7 +31,7 @@ function snoozeEmailCard(e) {
   var explanationtxt = CardService.newTextParagraph()
     .setText("\nOr choose your own time below: ")
   var recipienttxt = CardService.newTextParagraph()
-    .setText("\n(Optional) Include additional recipients: ")
+    .setText("\n(Optional) Include additional recipients: ");
 
   // Button Actions
   // action calls snoozeTimer to create a time-based trigger
@@ -80,8 +80,6 @@ function snoozeEmailCard(e) {
     .setText("(Optional) Send reply email to let them know you will get back to them:");
   var responseupdateaction = CardService.newAction()
       .setFunctionName('updateResponseField');
-  var responseaction = CardService.newAction()
-      .setFunctionName('sendSnoozeResponseEmail');
   responseemailbody = getPropertySnoozeResponseEmail();
   var responseinput = CardService.newTextInput()
     .setFieldName("responseinput")
@@ -114,16 +112,6 @@ function snoozeEmailCard(e) {
 function updateResponseField(e){
   var scriptProperties = PropertiesService.getUserProperties();
   scriptProperties.setProperty("snoozeresponseemail", e.formInput.responseinput);
-}
-
-function sendSnoozeResponseEmail(e){
-  console.log(e)
-  updateResponseField(e)
-  MailApp.sendEmail({
-    to: "recipient@example.com",
-    subject: "Logos",
-    htmlBody: e.formInput.responseinput,
-  });
 }
 
 /**
@@ -199,12 +187,15 @@ function snoozeAddRecipients(e){
  */
 function snoozeTimer(e, date){
   console.log("snooze timer")
+  console.log(e)
   snoozeUntil = new Date(e.formInput.date_field.msSinceEpoch)
   if (date != undefined){ snoozeUntil = date }
   // get thread and add it to snoozed folder
   var thread = GmailApp.getThreadById(e.gmail.threadId);
   var label = GmailApp.getUserLabelByName("Snoozed");
   thread.addLabel(label);
+
+  if (e.formInput.sendreplyemail != undefined){thread.reply(e.formInput.responseinput)}
 
   // set a time based trigger to forward email
   var trigger = ScriptApp.newTrigger('forwardEmail')
