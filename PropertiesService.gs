@@ -130,6 +130,27 @@ function getPropertySelectedSnoozeRecipients(){
 }
 
 /**
+ * Called by Email Snooze functions to set default response email
+ * Stores: (string)
+ *      contains email body 
+ * Example selectedrecipients object:
+ *    " "
+ * @return {String} The snoozeresponseemail string
+ */
+function getPropertySnoozeResponseEmail(){
+  var scriptProperties = PropertiesService.getUserProperties();
+  selectedrecipients = scriptProperties.getProperty("snoozeresponseemail")
+  if (selectedrecipients===null){ 
+    selectedrecipients = "Hi, \nThank you for your email. I will get back to you soon!"; 
+  }
+  else if (typeof(selectedrecipients) != "string") { 
+    selectedrecipients = "Hi, \nThank you for your email. I will get back to you soon!"; 
+  }
+  scriptProperties.setProperty("selectedrecipients", selectedrecipients);
+  return selectedrecipients
+}
+
+/**
  * Called by Meeting Poll functions to store meeting location options in an array
  * Stores: [(string)]
  *      each string contains a name of location

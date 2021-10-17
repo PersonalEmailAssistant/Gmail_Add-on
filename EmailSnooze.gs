@@ -71,24 +71,60 @@ function snoozeEmailCard(e) {
   section.addWidget(recipienttxt)
     .addWidget(snoozeAddRecipients(e))
     .addWidget(emailSnoozeRecipientGroupsButtons())
-    .addWidget(getManangeCustomButtons());
+    .addWidget(getManangeCustomButtons())
+    .setCollapsible(true)
+    .setNumUncollapsibleWidgets(6);
 
-  //do we need a footer for snooze or not? cause i think this might be more consistent if we add it.
+  // send response email
+  var responsetxt = CardService.newTextParagraph()
+    .setText("(Optional) Send reply email to let them know you will get back to them:");
+  var responseupdateaction = CardService.newAction()
+      .setFunctionName('updateResponseField');
+  var responseaction = CardService.newAction()
+      .setFunctionName('sendSnoozeResponseEmail');
+  responseemailbody = getPropertySnoozeResponseEmail();
+  var responseinput = CardService.newTextInput()
+    .setFieldName("responseinput")
+    .setTitle("Email body")
+    .setMultiline(true)
+    .setValue(responseemailbody)
+    .setOnChangeAction(responseupdateaction);
+
+  sendreplyoption = switchDecoratedText  = CardService.newDecoratedText()
+  .setText("(Optional) Send reply email to let them know you will get back to them:")
+  .setWrapText(true)
+  .setSwitchControl(CardService.newSwitch()
+      .setFieldName("sendreplyemail")
+      .setValue(true));
+      //.setOnChangeAction(CardService.newAction()
+      //    .setFunctionName("handleSwitchChange")));
+
+  var section2 = CardService.newCardSection()
+    .addWidget(sendreplyoption)
+    .addWidget(responseinput);
   
   var footer = buildPreviousAndRootButtonSet();
   var card = CardService.newCardBuilder()
   .setFixedFooter(footer)
-  .addSection(section);
+  .addSection(section)
+  .addSection(section2);
   return card.build();
-  
-  //if the footer isn't neccessary, delete ^ code above ^ is fine
-  /*
-  // add section to card and build display
-  var card = CardService.newCardBuilder().addSection(section);
-  return CardService.newNavigation().updateCard(card.build());
-  */
 }
 
+function updateResponseField(e){
+  var scriptProperties = PropertiesService.getUserProperties();
+  scriptProperties.setProperty("snoozeresponseemail", e.formInput.responseinput);
+}
+
+function sendSnoozeResponseEmail(e){
+  console.log(e)
+  updateResponseField(e)
+  MailApp.sendEmail({
+    to: "recipient@example.com",
+    subject: "Logos",
+    htmlBody: e.formInput.responseinput,
+  });
+}
 
 /**
  * Callback for creating the Snooze Quick Button widgets. Each button is a quick
