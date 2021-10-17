@@ -219,7 +219,9 @@ function snoozeTimer(e, date){
   scriptProperties.setProperty(id, e.gmail.messageId);
 
   // check if the user has entered additional recipients to recieve snoozed email
-  if (e.formInput.snoozerecipients!=undefined) scriptProperties.setProperty(id+"additional", e.formInput.snoozerecipients);
+  if (e.formInput.additionalrecipients != undefined && e.formInput.snoozerecipients!=undefined) {
+    scriptProperties.setProperty(id+"additional", e.formInput.snoozerecipients);
+  }
   else scriptProperties.setProperty(id+"additional", "");
 
   // move email out of inbox
