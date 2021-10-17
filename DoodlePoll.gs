@@ -7,6 +7,7 @@ function doodlePoll(e) {
   var userCache = CacheService.getUserCache();
   userCache.put("dptitle",null);
   userCache.put("dplength",null);
+  userCache.put("dpnotes",null);
   userCache.put("dplocation",null);
   userCache.put("dpotherlocation",null);
   userCache.put("dpdateused", true)
@@ -330,11 +331,7 @@ function dateSelectorDP(e) {
       .setOnChangeAction(CardService.newAction()
         .setFunctionName("checkCalendarAvailability"));
 
-
   dateOptions = getPropertyDPDateOptions();
-
-  //if (dateOptions.length == 0) dateSelector.setValueInMsSinceEpoch(new Date().getTime());
-  //else dateSelector.setValueInMsSinceEpoch(dateOptions[dateOptions.length-1].msSinceEpoch);
 
   return dateSelector;
 }
@@ -356,7 +353,7 @@ function buildCalendarAvailabilityCard(msSinceEpoch){
   var datetext = CardService.newTextParagraph()
       .setText("Calendar Events for "+ Utilities.formatDate(inputdate, userTimeZone, "MMM dd YYYY"));
   section.addWidget(datetext);
-  
+
   events.forEach(function(value) {
     starttime = Utilities.formatDate(value.getStartTime(), userTimeZone, "hh:mm a");
     endtime = Utilities.formatDate(value.getEndTime(), userTimeZone, "hh:mm a");
@@ -396,8 +393,7 @@ function formatDatesDP(e) {
         userTimeZone, "EEE, MMM dd YYYY, hh:mm a");
     console.log("Start Time: " + startTime);
     console.log("End Time: " + endTime);
-    console.log("OG Number: " + value.msSinceEpoch);
-    console.log("Plus Meeting Length: " + meetinglength);
+    console.log("Meeting Length: " + meetinglength);
     formattedDates.push(startTime + " - \n" + endTime);
   })
 
@@ -473,7 +469,8 @@ function removeOptionDP(e) {
   removeOption.addItem("","",true)
   var userProperties = PropertiesService.getUserProperties();
   var userCache = CacheService.getUserCache();
-  if (userCache.get("dpdateused")) {
+
+  if (userCache.get("dpdateused") == true) {
     removeOption.setOnChangeAction(CardService.newAction()
       .setFunctionName('removeDateOption'));
 
@@ -483,8 +480,7 @@ function removeOptionDP(e) {
       //https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
       timevalue = Utilities.formatDate(time, userTimeZone, "EEE, MMM dd, hh:mm a");
       removeOption.addItem(timevalue, timevalue, false)
-    })
-  }
+    })}
   else {
     removeOption.setOnChangeAction(CardService.newAction()
       .setFunctionName('removeTextOption'));
@@ -492,8 +488,7 @@ function removeOptionDP(e) {
     options = JSON.parse(userProperties.getProperty("dptextoptions"));
     options.forEach(function(value) {
       removeOption.addItem(value, value, false)
-    })
-  }
+    })}
 
   return removeOption;
 }
@@ -626,8 +621,6 @@ function dateScheduleUpdateDP(e) {
 function textScheduleUpdateDP(e) {
   var userCache = CacheService.getUserCache();
   var userProperties = PropertiesService.getUserProperties();
-  userCache.put("dpdateused",false)
-
   var textScheduleSection = CardService.newCardSection()
     .addWidget(textSelectorDP())
     .addWidget(addTextOptionButtonDP())
@@ -686,7 +679,7 @@ function addTextOption(e) {
 
 function removeDateOption(e) {
   var userProperties = PropertiesService.getUserProperties();
-  dateoptions = getPropertyDPDateOptions();
+  var dateoptions = getPropertyDPDateOptions();
   newerlist = [];
   dateoptions.forEach(function(value) {
     formattedValue = Utilities.formatDate(new Date(value.msSinceEpoch), userTimeZone, "EEE, MMM dd, hh:mm a");
@@ -701,7 +694,7 @@ function removeDateOption(e) {
 function removeTextOption(e) {
   var userProperties = PropertiesService.getUserProperties();
   getPropertyDPTextOptions();
-  textoptions = JSON.parse(userProperties.getProperty("dptextoptions"));
+  var textoptions = JSON.parse(userProperties.getProperty("dptextoptions"));
   textoptions.pop(e.formInput.removeOptionDPvalue);
   userProperties.setProperty("dptextoptions", JSON.stringify(textoptions));
 
@@ -837,7 +830,6 @@ function onFormResponse(e){
   if (switchResponsesKey) {
   console.log(e.response.getRespondentEmail())
   meetingAddEmail(e.source.getId(), e.response.getRespondentEmail())
-  //console.log(e.response.getItemResponses()[1].getResponse())
   emailBody = "There has been a new response \nView poll results at: " + e.source.getSummaryUrl()
   MailApp.sendEmail(Session.getActiveUser().getEmail(), "New form response", emailBody);
   }
@@ -872,7 +864,6 @@ function bookMeetingCard(e){
     .setParameters({time: e.parameters.time, formid: e.parameters.formid}));
   var titlefield = CardService.newTextInput().setFieldName("titlefield").setTitle("Title").setValue(form.getItems()[0].getTitle());
   var locationfield = CardService.newTextInput().setFieldName("locationfield").setTitle("Location").setValue(location);
-  //var locationfield = CardService.newTextInput().setFieldName("locationfield").setTitle("Location");
 
   // Card Section for Snooze components, each add widget calls a function that creates the widget
   var section = CardService.newCardSection()
