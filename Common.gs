@@ -130,7 +130,7 @@ function buildSearchCard_(e, isOnHomepage, opt_error) {
     .setFieldName("query")
     .setSuggestions(CardService.newSuggestions()
       .addSuggestion('Map link')
-      .addSuggestion('Doodle poll'))
+      .addSuggestion('Meeting poll'))
     .setHint("Name of functions")
     .setTitle("What can I do for you today?"); 
   } else {
@@ -139,7 +139,7 @@ function buildSearchCard_(e, isOnHomepage, opt_error) {
     .setSuggestions(CardService.newSuggestions()
       .addSuggestion('Snooze')
       .addSuggestion('Map link')
-      .addSuggestion('Doodle poll'))
+      .addSuggestion('Meeting poll'))
     .setHint("Name of functions")
     .setTitle("What can I do for you today?");
   }
@@ -185,7 +185,7 @@ function buildSearchCard_(e, isOnHomepage, opt_error) {
         .setFunctionName('doodlePoll');
 
   var doodlePollButton = CardService.newTextButton()
-    .setText('Doodle Poll')
+    .setText('Meeting Poll')
     .setOnClickAction(doodlePoll);
 
   var buttonSetDoodlePoll = CardService.newButtonSet()

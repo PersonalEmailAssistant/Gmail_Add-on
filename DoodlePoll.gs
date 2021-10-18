@@ -14,7 +14,7 @@ function doodlePoll(e) {
 
   if (items.length == 0){return createDoodlePoll(e);}
   var button1 = CardService.newTextButton()
-      .setText('Create new doodle poll')
+      .setText('Create new Meeting poll')
       .setOnClickAction(CardService.newAction()
       .setFunctionName('createDoodlePoll'))
       .setTextButtonStyle(CardService.TextButtonStyle.FILLED);
@@ -470,7 +470,7 @@ function removeOptionDP(e) {
   var userProperties = PropertiesService.getUserProperties();
   var userCache = CacheService.getUserCache();
 
-  if (userCache.get("dpdateused") == true) {
+  if (userCache.get("dpdateused") == 'true') {
     removeOption.setOnChangeAction(CardService.newAction()
       .setFunctionName('removeDateOption'));
 
@@ -856,13 +856,11 @@ function bookMeetingCard(e){
   emailstring = "";
   emails.forEach(function(address) {emailstring +=address+" "})
 
-  var invitetext = CardService.newTextParagraph().setText(form.getItems()[0].getTitle()+" for "+time+"\n\nEmail Invitation:");
-  var emailtext = CardService.newTextParagraph().setText("Invited: "+emailstring);
-  var emailField = CardService.newTextInput().setFieldName("addemails").setTitle("Add emails");
-  var addemailsubmit = CardService.newTextButton().setText('Add Email')
-    .setOnClickAction(CardService.newAction().setFunctionName("bookMeetingAddEmail")
-    .setParameters({time: e.parameters.time, formid: e.parameters.formid}));
-  var titlefield = CardService.newTextInput().setFieldName("titlefield").setTitle("Title").setValue(form.getItems()[0].getTitle());
+  var invitetext = CardService.newTextParagraph().setText(form.getTitle()+" for "+time+"\n\nEmail Invitation:");
+  //var emailtext = CardService.newTextParagraph().setText("Invited: "+emailstring);
+  var emailField = CardService.newTextInput()
+      .setFieldName("addemails").setTitle("Meeting Partipants (comma separated emails)").setMultiline(true);
+  var titlefield = CardService.newTextInput().setFieldName("titlefield").setTitle("Title").setValue(form.getTitle());
   var locationfield = CardService.newTextInput().setFieldName("locationfield").setTitle("Location").setValue(location);
 
   // Card Section for Snooze components, each add widget calls a function that creates the widget
@@ -870,9 +868,9 @@ function bookMeetingCard(e){
     .setHeader("Book Meeting")
     .addWidget(invitetext)
     .addWidget(titlefield)
-    .addWidget(emailtext)
+    //.addWidget(emailtext)
     .addWidget(emailField)
-    .addWidget(addemailsubmit)
+    //.addWidget(addemailsubmit)
     .addWidget(locationfield)
     .addWidget(bookButton);
 
@@ -885,10 +883,6 @@ function bookMeetingCard(e){
   return card.build();
 }
 
-function bookMeetingAddEmail(e){
-  meetingAddEmail(e.parameters.formid, e.formInput.addemails)
-  return bookMeetingCard(e)
-}
 
 function meetingAddEmail(formid, email){
   if (email != null){
@@ -906,20 +900,19 @@ function bookMeeting(e){
   var emails = [];
   storedlocation = e.formInput.locationfield
 
-  storedpolls.forEach(function(array) {if (array[0]== formid)
-  {meetinglength = array[1]; emails = array[2];}})
+  storedpolls.forEach(function(array) {if (array[0]== formid) meetinglength = array[1]; });
   console.log(meetinglength)
-  emailstring = "";
-  emails.forEach(function(email){emailstring +=email+","})
+  emailstring = e.formInput.addemails;
   console.log(emailstring)
 
-  time = e.parameters.time;
+  stringtime = e.parameters.time;
+  starttime = new Date(stringtime.slice(0, stringtime.indexOf("-")));
+  console.log("time below")
   hoursoffset = parseInt(Utilities.formatDate(now, userTimeZone, "hh"))-parseInt(Utilities.formatDate(now, "GMT", "hh"));
-
-  starttime = new Date(time + now.getFullYear());
-  console.log(starttime);
+  
   starttime = new Date(starttime.getTime()-(hoursoffset * 60 * 60 * 1000)); // stored date includes timezone which is an issue
   endtime = new Date(starttime.getTime()+(meetinglength * 60 * 1000)); // add 30 minutes in milliseconds
+
   console.log(starttime);
   console.log(endtime);
   CalendarApp.getDefaultCalendar().createEvent(e.formInput.titlefield,starttime,endtime,

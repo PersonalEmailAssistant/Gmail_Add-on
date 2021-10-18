@@ -392,7 +392,7 @@ function manageCustomButtonsCard(){
     .setOnClickAction(action);
 
   var doodlepollSection = CardService.newCardSection()
-    .setHeader("Doodle Poll Quick Locations")
+    .setHeader("Meeting Poll Quick Locations")
     .addWidget(info1)
     .addWidget(doodlepollButtonSet)
     .addWidget(doodlepollinput)
@@ -439,8 +439,6 @@ function addNewQuickButton(e){
 }
 
 function addQuickLocationButton(e){
-  console.log("checking input!!!!")
-  console.log(e.formInput.addQuickLocationInput);
   if (e.formInput.addQuickLocationInput == undefined) return;
   getPropertyDPLocation();
   addPropertiesServiceItem("dplocations", e.formInput.addQuickLocationInput)
